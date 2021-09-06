@@ -1,4 +1,5 @@
 import torch 
+from models.cifar import resnet
 
 def get_state_dict_from_checkpoint(checkpoint_path, map_location=None):
     '''loads the state dict from a given checkpoint path'''

@@ -18,7 +18,6 @@ import yaml
 import models.vae as vae_mod
 import models
 import pickle
-from models.cifar import resnet
 
 DATA_ROOT = os.environ['DATA_ROOT']
 
