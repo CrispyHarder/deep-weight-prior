@@ -19,7 +19,7 @@ import models.vae as vae_mod
 import models
 import pickle
 
-DATA_ROOT = os.environ['DATA_ROOT']
+DATA_ROOT = os.path.join('data')# os.environ['DATA_ROOT']
 
 def kl_ffn(mu0, var0, mu1, var1):
     return 0.5 * (var0/var1 + (mu1 - mu0)**2 / var1 - 1 + np.log(var1/var0))
