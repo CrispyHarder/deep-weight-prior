@@ -3,7 +3,7 @@ import numpy as np
 import os
 from numpy.core.numeric import full
 import torch 
-from utils import get_state_dict_from_checkpoint
+from my_utils import get_state_dict_from_checkpoint
 
 
 parser = argparse.ArgumentParser()
@@ -45,12 +45,4 @@ for split in ['train','val']:
         if not os.path.exists(full_target_path):
             os.makedirs(full_target_path)
         np.save(os.path.join(full_target_path,split),np_slices[n_layer])
-
-
-                
         
-
-
-
-
-
