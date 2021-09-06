@@ -30,7 +30,7 @@ for split in ['train','val']:
     slices = [[] for _ in range(args.n_conv_layers)]
     for run in os.listdir(full_source_path):
         run_cp_path = os.path.join(full_source_path,run,'model.th')
-        state_dict = get_state_dict_from_checkpoint(run_cp_path)
+        state_dict = get_state_dict_from_checkpoint(run_cp_path,map_location=torch.device('cpu'))
         layer = 0
         for param_tensor in state_dict: 
             if 'conv' in param_tensor: 
