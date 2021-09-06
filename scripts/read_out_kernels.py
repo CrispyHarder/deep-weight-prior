@@ -21,7 +21,7 @@ args = parser.parse_args()
 
 k_dim = args.D 
 dim_str = str(k_dim)+'x'+str(k_dim) #like 3x3 
-target_path = os.path.join(args.target_path,dim_str)
+target_path = os.path.join(args.target_path,args.arch,dim_str)
 
 for split in ['train','val']:
     full_source_path = os.path.join(args.source_path,split)
