@@ -1,7 +1,6 @@
 import argparse
 import numpy as np 
 import os
-from numpy.core.numeric import full
 import torch 
 from my_utils import get_state_dict_from_checkpoint
 
