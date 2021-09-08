@@ -3,6 +3,7 @@
 /storage/*
 /*_temp/*
 /data/*
+/logs/*
 
 # Private files (e.g. sontaining private data information)
 *_private.py
