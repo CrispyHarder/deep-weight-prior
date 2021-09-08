@@ -137,7 +137,7 @@ class ExParser(ParserWithRoot):
                  automark=(),
                  **kwargs):
 
-        root = os.path.join(os.path.abspath(os.environ['DWP_PATH']), ('exman-' + str(file)))
+        root = os.path.join(os.path.abspath('logs'), ('exman-' + str(file)))
         if not os.path.exists(root):
             os.makedirs(root)
         super().__init__(*args, root=root, zfill=zfill,

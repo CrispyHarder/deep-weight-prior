@@ -67,6 +67,7 @@ def train(trainloader, testloader, vae, optimizer, scheduler, criterion, args, D
         logger.iter_info()
         logger.save()
 
+        # TODO look what is beneath here ? 
         # if epoch % args.eval_freq == 0:
         #     z = prior.rsample(sample_shape=(25, args.z_dim, 1))
         #     x_mu, x_var = vae.decode(z)
@@ -108,6 +109,8 @@ def adjust_learning_rate(optimizer, lr):
 
 
 def lr_linear(epoch):
+    '''sets the learning rate in a way that it is lr at epoch 0 and linearily 
+    decreases to 0 at args.num_epochs. After num_epochs the lr is constantly zero'''
     lr = args.lr * np.minimum((-epoch) * 1. / (args.num_epochs) + 1, 1.)
     return max(0, lr)
 
@@ -143,6 +146,8 @@ if __name__ == '__main__':
     np.random.seed(args.seed)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+    # TODO Iterate over layers from here on
+    # TODO make a list of dataloaders to be iterated over 
     if args.data_dir:
         trainloader, D = utils.get_dataloader(os.path.join(args.data_dir, 'train.npy'), args.batch_size, shuffle=True)
         testloader, D = utils.get_dataloader(os.path.join(args.data_dir, 'test.npy'), args.test_bs, shuffle=False)
@@ -150,8 +155,10 @@ if __name__ == '__main__':
         trainloader, D = utils.get_dataloader(args.train, args.batch_size, shuffle=True)
         testloader, D = utils.get_dataloader(args.test, args.test_bs, shuffle=False)
 
+    # TODO this needs to be asserted everytime as well 
     assert args.kernel_dim == D, '--kernel-dim != D (in dataset)'
 
+    # TODO VAEs initialisation needs to be done for every layer 
     if D == 3:
         decoder = vae.Decoder3x3(args.z_dim, args.hidden_dim)
         encoder = vae.Encoder3x3(args.z_dim, args.hidden_dim)

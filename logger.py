@@ -48,8 +48,8 @@ class Logger:
         names = list(self.scalar_metrics.keys())
         if order:
             names = order
-        values = [self.scalar_metrics[name][-1][1] for name in names]
-        t = int(np.max([self.scalar_metrics[name][-1][0] for name in names]))
+        values = [self.scalar_metrics[name][-1][1] for name in names] #last values for every metric
+        t = int(np.max([self.scalar_metrics[name][-1][0] for name in names])) # last timepoints(epochs) for every metric
         fmt = ['%s'] + [self.fmt[name] if name in self.fmt else '.3f' for name in names]
 
         if self.handler:
