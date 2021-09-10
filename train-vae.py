@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 import torch
 from torch.autograd import Variable
+from torch.serialization import save
 import utils
 from torch import nn
 from utils import tonp
@@ -22,6 +23,7 @@ from pathlib import Path
 def train(trainloader, testloader, vae, optimizer, scheduler, criterion, args, D):
     logger = Logger(name='logs', base=args.root)
     prior = dist.Normal(torch.FloatTensor([0.]).to(vae.device), torch.FloatTensor([1.]).to(vae.device))
+    best_elbo = -1000000
     for epoch in range(1, args.num_epochs + 1):
         adjust_learning_rate(optimizer, lr_linear(epoch))
         scheduler.step()
@@ -67,7 +69,8 @@ def train(trainloader, testloader, vae, optimizer, scheduler, criterion, args, D
         logger.iter_info()
         logger.save()
 
-        # TODO look what is beneath here ? 
+        # # TODO look what is beneath here ? 
+        # # Seems to be visual evaluation while traintime
         # if epoch % args.eval_freq == 0:
         #     z = prior.rsample(sample_shape=(25, args.z_dim, 1))
         #     x_mu, x_var = vae.decode(z)
@@ -99,8 +102,21 @@ def train(trainloader, testloader, vae, optimizer, scheduler, criterion, args, D
         #     f.savefig(os.path.join(args.root, 'sample_reconstructions'), dpi=200)
         #     plt.close(f)
 
-        torch.save(vae.state_dict(), os.path.join(args.root, 'vae_params.torch'))
-        torch.save(optimizer.state_dict(), os.path.join(args.root, 'opt_params.torch'))
+        if (epoch-1) % 10 == 0:
+            torch.save(vae.state_dict() , os.path.join(args.root, 'vae_params_epoch_{}.torch'.format(epoch)))
+            torch.save(optimizer.state_dict(), os.path.join(args.root, 'opt_params_epoch_{}.torch'.format(epoch)))
+
+        test_elbo = test_likelihood - test_kl
+        is_best = (test_elbo>best_elbo)
+        if is_best:
+            best_elbo = test_elbo
+            torch.save(vae.state_dict(), os.path.join(args.root, 'vae_params.torch'))   
+            if args.add_save_path : 
+                torch.save(vae.state_dict(), os.path.join(args.add_save_path, 'vae_params.torch'))  
+   
+
+    torch.save(vae.state_dict(), os.path.join(args.root, 'vae_params_lastepoch.torch'))
+    torch.save(optimizer.state_dict(), os.path.join(args.root, 'opt_params_lastepoch.torch'))
 
 
 def adjust_learning_rate(optimizer, lr):
@@ -136,7 +152,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr_decay_step', default=int(11e8), type=int)
     parser.add_argument('--decay', default=0.5, type=float)
     parser.add_argument('--var', default='train')
-    parser.add_argument('--name', default='')
+    parser.add_argument('--add_save_path', default='')
     args = parser.parse_args()
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
