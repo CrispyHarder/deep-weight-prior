@@ -15,6 +15,7 @@ import torch.distributions as dist
 # import seaborn as sns
 import myexman
 from pathlib import Path
+from my_utils import save_args_params
 
 # sns.set()
 # plt.switch_backend('agg')
@@ -154,6 +155,9 @@ if __name__ == '__main__':
     parser.add_argument('--var', default='train')
     parser.add_argument('--add_save_path', default='')
     args = parser.parse_args()
+
+    #save the args to the dict, from where the vaes are initialised
+    save_args_params(args,args.add_save_path)
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
     args.cuda = torch.cuda.is_available()

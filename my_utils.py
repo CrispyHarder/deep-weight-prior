@@ -1,5 +1,7 @@
 import torch 
 from models.cifar import resnet
+import yaml
+import os 
 
 def get_state_dict_from_checkpoint(checkpoint_path, map_location=None):
     '''loads the state dict from a given checkpoint path'''
@@ -20,3 +22,9 @@ def load_resnet_from_checkpoint(checkpoint_path, model_type, dataset_name):
     if torch.cuda.is_available():
         model.cuda()  
     return model
+
+def save_args_params(args, dir_path):
+    dumbd = args.__dict__.copy()
+    path = os.path.join(dir_path,'params.yaml')
+    with open(path,'a') as f:
+        yaml.dump(dumbd,f)
