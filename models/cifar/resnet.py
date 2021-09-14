@@ -25,8 +25,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
-
+import utils
+import numpy as np 
 from torch.autograd import Variable
+import os 
 
 __all__ = ['ResNet', 'resnet20', 'resnet32', 'resnet44', 'resnet56', 'resnet110', 'resnet1202']
 
@@ -78,8 +80,10 @@ class BasicBlock(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=10):
+    def __init__(self, num_blocks, num_classes=10,vae_list=None):
         super(ResNet, self).__init__()
+        block = BasicBlock
+
         self.in_planes = 16
 
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
@@ -100,6 +104,51 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
+    def mult_weights_init(self, init_mode, init_root):
+        self.apply(utils.weight_init(module=nn.Conv2d, initf=nn.init.xavier_normal_))
+        self.apply(utils.weight_init(module=nn.Linear, initf=nn.init.xavier_normal_))
+
+        # get all conv layers 
+        sd = self.state_dict()
+        convs = [] 
+        for params in sd:
+            if 'conv' in params:
+                convs.append(sd[params]) 
+        
+        for i, m in enumerate(convs):
+            init = init_mode
+            w =  m.weight
+            short_path = os.path.join(init_root,'layer_{}'.format(i),init_mode)
+            if init == 'vae':
+                vae_path = short_path
+                vae = utils.load_vae(vae_path)
+                z = torch.randn(w.size(0) * w.size(1), vae.encoder.z_dim, 1, 1).cuda()
+                x = vae.decode(z)[0]
+                w.data = x.reshape(w.shape)
+            elif init == 'flow':
+                flow_path = short_path
+                flow = utils.load_flow(flow_path, device=self.device)
+                utils.flow_init(flow)(w)
+            elif init == 'xavier':
+                pass
+            elif init == 'filters':
+                filters = np.load(os.path.join(short_path,'filters.torch'))
+                filters = np.concatenate([filters]*10)
+                N = np.prod(w.shape[:2])
+                filters = filters[np.random.permutation(len(filters))[:N]]
+                w.data = torch.from_numpy(filters.reshape(*w.shape)).to(self.device)
+            elif init == 'recon':
+                filters = np.load(os.path.join(short_path,'filters.torch'))
+                filters = np.concatenate([filters]*10)
+                N = np.prod(w.shape[:2])
+                filters = filters[np.random.permutation(len(filters))[:N]]
+                vae_path = os.path.join(short_path,'vae_params.torch')
+                vae = utils.load_vae(vae_path, device=self.device)
+                filters = vae(torch.from_numpy(filters).to(self.device))[1][0]
+                w.data = filters.reshape_as(w)
+            else:
+                raise NotImplementedError('no {} init'.format(init))
+
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.layer1(out)
@@ -112,27 +161,27 @@ class ResNet(nn.Module):
 
 
 def resnet20():
-    return ResNet(BasicBlock, [3, 3, 3])
+    return ResNet([3, 3, 3])
 
 
 def resnet32():
-    return ResNet(BasicBlock, [5, 5, 5])
+    return ResNet([5, 5, 5])
 
 
 def resnet44():
-    return ResNet(BasicBlock, [7, 7, 7])
+    return ResNet([7, 7, 7])
 
 
 def resnet56():
-    return ResNet(BasicBlock, [9, 9, 9])
+    return ResNet([9, 9, 9])
 
 
 def resnet110():
-    return ResNet(BasicBlock, [18, 18, 18])
+    return ResNet([18, 18, 18])
 
 
 def resnet1202():
-    return ResNet(BasicBlock, [200, 200, 200])
+    return ResNet([200, 200, 200])
 
 
 def test(net):

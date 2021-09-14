@@ -6,6 +6,7 @@ import os
 import time
 from models.lenet import FConvMNIST
 from models.cifarnet import CIFARNet, CIFARNetNew
+from models.cifar import ResNet
 import utils
 from logger import Logger
 from utils import tonp
@@ -54,6 +55,9 @@ parser.add_argument('--bs', default=256, type=int, help='Batch size')
 parser.add_argument('--test_bs', default=500, type=int, help='Batch size for test dataloader')
 parser.add_argument('--model', default='vgg')
 parser.add_argument('--model_size', default=1., type=float)
+parser.add_argument('--mult_init', default= 1, type = int)
+parser.add_argument('--mult_init_mode', default= 'vae', type = str)
+parser.add_argument('--mult_init_root', type=str, default='')
 parser.add_argument('--pretrained', default='')
 parser.add_argument('--filters_list', default=[], nargs='*', type=str)
 parser.add_argument('--seed', default=42, type=int)
@@ -99,14 +103,19 @@ elif args.model == 'cifarnet':
 elif args.model == 'cifarnetnew':
     net = CIFARNetNew(args.net_cfg, device=device, n_classes=args.n_classes, do=args.do, k=args.model_size,
                       vae_list=args.vae_list)
+elif args.model == 'resnet20':
+    net = ResNet([3,3,3],num_classes=args.n_classes,vae_list=args.vae_list)
 else:
     raise NotImplementedError
 
 # Initialization
-if hasattr(net, 'weights_init'):
-    net.weights_init(args.init_list, args.vae_list, pretrained=args.pretrained, filters_list=args.filters_list)
+if args.mult_init : 
+    net.mult_weights_init(args.mult_init_mode, args.mult_init_root)
 else:
-    utils.net_init(net, args.init, args.vae)
+    if hasattr(net, 'weights_init'):
+        net.weights_init(args.init_list, args.vae_list, pretrained=args.pretrained, filters_list=args.filters_list)
+    else:
+        utils.net_init(net, args.init, args.vae)
 
 if args.dwp_reg != 0:
     net.set_dwp_regularizer(args.vae_list)
