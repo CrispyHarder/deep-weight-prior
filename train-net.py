@@ -76,8 +76,10 @@ parser.add_argument('--dwp_samples', default=1, type=int)
 parser.add_argument('--rfe', default=0, type=int)
 parser.add_argument('--fastconv', default=0, type=int)
 parser.add_argument('--aug', default=0, type=int)
+parser.add_argument('--gpu_id', default='0')
 
 args = parser.parse_args()
+os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
