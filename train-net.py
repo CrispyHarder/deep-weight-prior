@@ -17,7 +17,7 @@ from models.bayes import _Bayes, BayesConv2d, FFGLinear
 from torch.optim.lr_scheduler import ReduceLROnPlateau, MultiStepLR
 import myexman
 from torch.nn import functional as F
-
+from torch.utils.tensorboard import SummaryWriter
 
 def adjust_learning_rate(optimizer, lr):
     for param_group in optimizer.param_groups:
@@ -104,12 +104,12 @@ elif args.model == 'cifarnetnew':
     net = CIFARNetNew(args.net_cfg, device=device, n_classes=args.n_classes, do=args.do, k=args.model_size,
                       vae_list=args.vae_list)
 elif args.model == 'resnet20':
-    net = ResNet([3,3,3],num_classes=args.n_classes,vae_list=args.vae_list)
+    net = ResNet([3,3,3],num_classes=args.n_classes)
 else:
     raise NotImplementedError
 
 # Initialization
-if args.mult_init : 
+if args.mult_init == 1 : 
     net.mult_weights_init(args.mult_init_mode, args.mult_init_root)
 else:
     if hasattr(net, 'weights_init'):
@@ -148,6 +148,10 @@ N = len(trainloader.dataset)
 t0 = time.time()
 
 it = 0
+
+#add a tensorboard writer
+writer = SummaryWriter(args.root)
+
 for e in range(1, args.epochs + 1):
     if args.milestones:
         lrscheduler.step()
@@ -236,10 +240,22 @@ for e in range(1, args.epochs + 1):
         logger.iter_info()
         logger.save()
 
+        writer.add_scalar( 'train/loss', train_loss.get_val(),e)
+        writer.add_scalar( 'train/nll', train_nll.get_val(),e)
+        writer.add_scalar( 'test/nll', test_nll,e)
+        writer.add_scalar( 'train/acc', train_acc.get_val(),e)
+        writer.add_scalar( 'test/acc', test_acc,e)
+        writer.add_scalar( 'lr', opt.param_groups[0]['lr'],e)
+        writer.add_scalar( 'sec', time.time() - t0,e)
+        writer.add_scalar( 'l2_norm', l2_norm.item(),e)
+        writer.add_scalar( 'dwp_reg', dwp_reg,e)
+        
+
         torch.save(net.state_dict(), os.path.join(args.root, 'model.torch'))
         torch.save(opt.state_dict(), os.path.join(args.root, 'opt.torch'))
 
         t0 = time.time()
 
+writer.flush()
 torch.save(net.state_dict(), os.path.join(args.root, 'model.torch'))
 torch.save(opt.state_dict(), os.path.join(args.root, 'opt.torch'))

@@ -80,7 +80,7 @@ class BasicBlock(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, num_blocks, num_classes=10,vae_list=None):
+    def __init__(self, num_blocks, num_classes=10):
         super(ResNet, self).__init__()
         block = BasicBlock
 
