@@ -151,7 +151,7 @@ it = 0
 
 #add a tensorboard writer
 writer = SummaryWriter(args.root)
-
+best_acc = 0.
 for e in range(1, args.epochs + 1):
     if args.milestones:
         lrscheduler.step()
@@ -250,12 +250,20 @@ for e in range(1, args.epochs + 1):
         writer.add_scalar( 'l2_norm', l2_norm.item(),e)
         writer.add_scalar( 'dwp_reg', dwp_reg,e)
         
+        epoch = e 
+        if (epoch-1) % 10 == 0:
+            torch.save(net.state_dict() , os.path.join(args.root, 'net_params_epoch_{}.torch'.format(epoch)))
+            torch.save(opt.state_dict(), os.path.join(args.root, 'opt_params_epoch_{}.torch'.format(epoch)))
 
-        torch.save(net.state_dict(), os.path.join(args.root, 'model.torch'))
-        torch.save(opt.state_dict(), os.path.join(args.root, 'opt.torch'))
-
+        
+        is_best = best_acc < test_acc
+        if is_best:
+            best_acc = test_acc
+            torch.save(net.state_dict(), os.path.join(args.root, 'net_params.torch'))     
+   
         t0 = time.time()
 
+torch.save(net.state_dict(), os.path.join(args.root, 'vae_params_lastepoch.torch'))
+torch.save(opt.state_dict(), os.path.join(args.root, 'opt_params_lastepoch.torch'))
+
 writer.flush()
-torch.save(net.state_dict(), os.path.join(args.root, 'model.torch'))
-torch.save(opt.state_dict(), os.path.join(args.root, 'opt.torch'))
