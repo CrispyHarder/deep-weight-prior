@@ -110,44 +110,46 @@ class ResNet(nn.Module):
 
         # get all conv layers 
         sd = self.state_dict()
-        convs = [] 
+        i = 0
         for params in sd:
             if 'conv' in params:
-                convs.append(sd[params]) 
-        
-        for i, m in enumerate(convs):
-            init = init_mode
-            w =  m.weight
-            short_path = os.path.join(init_root,'layer_{}'.format(i),init_mode)
-            if init == 'vae':
-                vae_path = short_path
-                vae = utils.load_vae(vae_path)
-                z = torch.randn(w.size(0) * w.size(1), vae.encoder.z_dim, 1, 1).cuda()
-                x = vae.decode(z)[0]
-                w.data = x.reshape(w.shape)
-            elif init == 'flow':
-                flow_path = short_path
-                flow = utils.load_flow(flow_path, device=self.device)
-                utils.flow_init(flow)(w)
-            elif init == 'xavier':
-                pass
-            elif init == 'filters':
-                filters = np.load(os.path.join(short_path,'filters.torch'))
-                filters = np.concatenate([filters]*10)
-                N = np.prod(w.shape[:2])
-                filters = filters[np.random.permutation(len(filters))[:N]]
-                w.data = torch.from_numpy(filters.reshape(*w.shape)).to(self.device)
-            elif init == 'recon':
-                filters = np.load(os.path.join(short_path,'filters.torch'))
-                filters = np.concatenate([filters]*10)
-                N = np.prod(w.shape[:2])
-                filters = filters[np.random.permutation(len(filters))[:N]]
-                vae_path = os.path.join(short_path,'vae_params.torch')
-                vae = utils.load_vae(vae_path, device=self.device)
-                filters = vae(torch.from_numpy(filters).to(self.device))[1][0]
-                w.data = filters.reshape_as(w)
-            else:
-                raise NotImplementedError('no {} init'.format(init))
+                init = init_mode
+                w =  sd[params]
+                short_path = os.path.join(init_root,'layer_{}'.format(i),init_mode)
+                if init == 'vae':
+                    vae_path = short_path
+                    vae = utils.load_vae(vae_path)
+                    z = torch.randn(w.size(0) * w.size(1), vae.encoder.z_dim, 1, 1).cuda()
+                    x = vae.decode(z)[0]
+                    sd[params] = x.reshape(w.shape)
+                elif init == 'flow':
+                    #deprecated 
+                    flow_path = short_path
+                    flow = utils.load_flow(flow_path, device=self.device)
+                    utils.flow_init(flow)(w)
+                elif init == 'xavier':
+                    pass
+                elif init == 'filters':
+                    #deprecated
+                    filters = np.load(os.path.join(short_path,'filters.torch'))
+                    filters = np.concatenate([filters]*10)
+                    N = np.prod(w.shape[:2])
+                    filters = filters[np.random.permutation(len(filters))[:N]]
+                    w.data = torch.from_numpy(filters.reshape(*w.shape)).to(self.device)
+                elif init == 'recon':
+                    #deprecated
+                    filters = np.load(os.path.join(short_path,'filters.torch'))
+                    filters = np.concatenate([filters]*10)
+                    N = np.prod(w.shape[:2])
+                    filters = filters[np.random.permutation(len(filters))[:N]]
+                    vae_path = os.path.join(short_path,'vae_params.torch')
+                    vae = utils.load_vae(vae_path, device=self.device)
+                    filters = vae(torch.from_numpy(filters).to(self.device))[1][0]
+                    w.data = filters.reshape_as(w)
+                else:
+                    raise NotImplementedError('no {} init'.format(init))
+                i += 1
+        self.load_state_dict(sd)    
 
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
