@@ -406,6 +406,9 @@ def load_vae(path, device=None):
     with open(os.path.join(path, 'params.yaml')) as f:
         vae_args = yaml.load(f)
 
+    if vae_args['kernel_dim'] == 3:
+        decoder = vae_mod.Decoder3x3(vae_args['z_dim'], vae_args['hidden_dim'])
+        encoder = vae_mod.Encoder3x3(vae_args['z_dim'], vae_args['hidden_dim']) 
     if vae_args['kernel_dim'] == 5:
         decoder = vae_mod.Decoder5x5(vae_args['z_dim'], vae_args['hidden_dim'], var=vae_args['var'])
         encoder = vae_mod.Encoder5x5(vae_args['z_dim'], vae_args['hidden_dim'])
