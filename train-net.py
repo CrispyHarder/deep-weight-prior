@@ -75,8 +75,8 @@ parser.add_argument('--mult_init_root', type=str, default='')
 parser.add_argument('--lr', default=0.1, type=float, help='Initial learning rate')
 parser.add_argument('--weight_decay', default=1e-4, type=float)
 parser.add_argument('--momentum', default=0.9, type=float)
-parser.add_argument('--milestones', type=int, nargs='*', default=[])
-parser.add_argument('--gammas', default=[], nargs='*', type=float)
+parser.add_argument('--milestones', type=int, nargs='*', default=[80,100])
+parser.add_argument('--gammas', default=[0.5,0.2], nargs='*', type=float)
 parser.add_argument('--decrease_from', default=0, type=int) #unused 
 
 # loss function settings 
