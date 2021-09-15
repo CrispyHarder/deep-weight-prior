@@ -106,7 +106,7 @@ elif args.model == 'cifarnetnew':
     net = CIFARNetNew(args.net_cfg, device=device, n_classes=args.n_classes, do=args.do, k=args.model_size,
                       vae_list=args.vae_list)
 elif args.model == 'resnet20':
-    net = ResNet([3,3,3],num_classes=args.n_classes)
+    net = ResNet([3,3,3],num_classes=args.n_classes).to(device)
 else:
     raise NotImplementedError
 
