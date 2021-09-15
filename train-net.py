@@ -38,35 +38,27 @@ def predict(data, net):
 
 
 parser = myexman.ExParser(file=__file__)
+#general settings
 parser.add_argument('--name', default='')
 parser.add_argument('--data', default='cifar')
+parser.add_argument('--gpu_id', default='0')
 parser.add_argument('--num_examples', default=None, type=int)
 parser.add_argument('--data_split_seed', default=456, type=int)
+parser.add_argument('--seed', default=5743, type=int)
 parser.add_argument('--resume', default='')
-
-parser.add_argument('--lr', default=0.1, type=float, help='Initial learning rate')
-parser.add_argument('--weight_decay', default=1e-4, type=float)
-parser.add_argument('--momentum', default=0.9, type=float)
-parser.add_argument('--milestones', type=int, nargs='*', default=[])
-parser.add_argument('--gammas', default=[], nargs='*', type=float)
-
-parser.add_argument('--do', default=[], type=float, nargs='*')
 parser.add_argument('--epochs', default=120, type=int, help='Number of epochs')
-parser.add_argument('--decrease_from', default=0, type=int)
-
 parser.add_argument('--bs', default=128, type=int, help='Batch size')
 parser.add_argument('--test_bs', default=500, type=int, help='Batch size for test dataloader')
 
+#model settings
 parser.add_argument('--model', default='resnet20')
 parser.add_argument('--model_size', default=1., type=float)
 parser.add_argument('--net_cfg', default='E')
 parser.add_argument('--hid_dim', default=[32, 64], type=int, nargs='+')
 parser.add_argument('--n_classes', default=10, type=int)
+parser.add_argument('--do', default=[], type=float, nargs='*')
 
-parser.add_argument('--mult_init', default= 1, type = int)
-parser.add_argument('--mult_init_mode', default= 'xavier', type = str)
-parser.add_argument('--mult_init_root', type=str, default='')
-
+#model init settings single init
 parser.add_argument('--pretrained', default='')
 parser.add_argument('--filters_list', default=[], nargs='*', type=str)
 parser.add_argument('--init', default='xavier')
@@ -74,16 +66,30 @@ parser.add_argument('--init_list', type=str, nargs='*', default=[])
 parser.add_argument('--vae', default='')
 parser.add_argument('--vae_list', type=str, nargs='*', default=[])
 
-parser.add_argument('--seed', default=5743, type=int)
+#model init settings multi init
+parser.add_argument('--mult_init', default= 1, type = int)
+parser.add_argument('--mult_init_mode', default= 'xavier', type = str)
+parser.add_argument('--mult_init_root', type=str, default='')
 
-parser.add_argument('--eval_freq', default=1, type=int)
+#optimizer settings
+parser.add_argument('--lr', default=0.1, type=float, help='Initial learning rate')
+parser.add_argument('--weight_decay', default=1e-4, type=float)
+parser.add_argument('--momentum', default=0.9, type=float)
+parser.add_argument('--milestones', type=int, nargs='*', default=[])
+parser.add_argument('--gammas', default=[], nargs='*', type=float)
+parser.add_argument('--decrease_from', default=0, type=int) #unused 
+
+# loss function settings 
 parser.add_argument('--l2', default=0., type=float)
 parser.add_argument('--dwp_reg', default=0., type=float)
+
+#evaluation and leftovers
+parser.add_argument('--eval_freq', default=1, type=int)
 parser.add_argument('--dwp_samples', default=1, type=int)
 parser.add_argument('--rfe', default=0, type=int)
 parser.add_argument('--fastconv', default=0, type=int)
 parser.add_argument('--aug', default=0, type=int)
-parser.add_argument('--gpu_id', default='0')
+
 
 args = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
