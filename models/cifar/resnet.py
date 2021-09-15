@@ -104,7 +104,7 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def mult_weights_init(self, init_mode, init_root):
+    def mult_weights_init(self, init_mode, init_root, device):
         self.apply(utils.weight_init(module=nn.Conv2d, initf=nn.init.xavier_normal_))
         self.apply(utils.weight_init(module=nn.Linear, initf=nn.init.xavier_normal_))
 
@@ -118,7 +118,7 @@ class ResNet(nn.Module):
                 short_path = os.path.join(init_root,'layer_{}'.format(i),init_mode)
                 if init == 'vae':
                     vae_path = short_path
-                    vae = utils.load_vae(vae_path)
+                    vae = utils.load_vae(vae_path,device=device)
                     z = torch.randn(w.size(0) * w.size(1), vae.encoder.z_dim, 1, 1).cuda()
                     x = vae.decode(z)[0]
                     sd[params] = x.reshape(w.shape)
