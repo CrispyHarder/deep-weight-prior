@@ -10,14 +10,11 @@ from models.cifar import ResNet
 import utils
 from logger import Logger
 from utils import tonp
-import sys
-from torch import distributions as dist
-import models
-from models.bayes import _Bayes, BayesConv2d, FFGLinear
-from torch.optim.lr_scheduler import ReduceLROnPlateau, MultiStepLR
+from torch.optim.lr_scheduler import MultiStepLR
 import myexman
 from torch.nn import functional as F
 from torch.utils.tensorboard import SummaryWriter
+from my_utils import MultistepMultiGammaLR
 
 def adjust_learning_rate(optimizer, lr):
     for param_group in optimizer.param_groups:
@@ -44,33 +41,43 @@ parser = myexman.ExParser(file=__file__)
 parser.add_argument('--name', default='')
 parser.add_argument('--data', default='cifar')
 parser.add_argument('--num_examples', default=None, type=int)
-parser.add_argument('--data_split_seed', default=42, type=int)
+parser.add_argument('--data_split_seed', default=456, type=int)
 parser.add_argument('--resume', default='')
-parser.add_argument('--lr', default=0.001, type=float, help='Initial learning rate')
-parser.add_argument('--gamma', default=0.5, type=float)
+
+parser.add_argument('--lr', default=0.1, type=float, help='Initial learning rate')
+parser.add_argument('--weight_decay', default=1e-4, type=float)
+parser.add_argument('--momentum', default=0.9, type=float)
+parser.add_argument('--milestones', type=int, nargs='*', default=[])
+parser.add_argument('--gammas', default=[], nargs='*', type=float)
+
 parser.add_argument('--do', default=[], type=float, nargs='*')
-parser.add_argument('--epochs', default=100, type=int, help='Number of epochs')
+parser.add_argument('--epochs', default=120, type=int, help='Number of epochs')
 parser.add_argument('--decrease_from', default=0, type=int)
-parser.add_argument('--bs', default=256, type=int, help='Batch size')
+
+parser.add_argument('--bs', default=128, type=int, help='Batch size')
 parser.add_argument('--test_bs', default=500, type=int, help='Batch size for test dataloader')
-parser.add_argument('--model', default='vgg')
+
+parser.add_argument('--model', default='resnet20')
 parser.add_argument('--model_size', default=1., type=float)
+parser.add_argument('--net_cfg', default='E')
+parser.add_argument('--hid_dim', default=[32, 64], type=int, nargs='+')
+parser.add_argument('--n_classes', default=10, type=int)
+
 parser.add_argument('--mult_init', default= 1, type = int)
-parser.add_argument('--mult_init_mode', default= 'vae', type = str)
+parser.add_argument('--mult_init_mode', default= 'xavier', type = str)
 parser.add_argument('--mult_init_root', type=str, default='')
+
 parser.add_argument('--pretrained', default='')
 parser.add_argument('--filters_list', default=[], nargs='*', type=str)
-parser.add_argument('--seed', default=42, type=int)
 parser.add_argument('--init', default='xavier')
 parser.add_argument('--init_list', type=str, nargs='*', default=[])
 parser.add_argument('--vae', default='')
 parser.add_argument('--vae_list', type=str, nargs='*', default=[])
-parser.add_argument('--milestones', type=int, nargs='*', default=[])
-parser.add_argument('--net_cfg', default='E')
-parser.add_argument('--hid_dim', default=[32, 64], type=int, nargs='+')
-parser.add_argument('--n_classes', default=10, type=int)
-parser.add_argument('--l2', default=0., type=float)
+
+parser.add_argument('--seed', default=5743, type=int)
+
 parser.add_argument('--eval_freq', default=1, type=int)
+parser.add_argument('--l2', default=0., type=float)
 parser.add_argument('--dwp_reg', default=0., type=float)
 parser.add_argument('--dwp_samples', default=1, type=int)
 parser.add_argument('--rfe', default=0, type=int)
@@ -138,8 +145,11 @@ elif args.rfe == 1:
 else:
     raise NotImplementedError
 
-opt = torch.optim.Adam(train_params, lr=args.lr)
-lrscheduler = MultiStepLR(opt, args.milestones, gamma=args.gamma)
+opt = torch.optim.SGD(net.parameters(), args.lr,
+                                    momentum=args.momentum,
+                                    weight_decay=args.weight_decay)
+lrscheduler = MultistepMultiGammaLR(opt, milestones=args.milestones, 
+                                    gamma=args.gammas)
 
 # Load params if fine-tuning
 if args.resume:
