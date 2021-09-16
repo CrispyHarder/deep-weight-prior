@@ -420,8 +420,10 @@ def load_vae(path, device=None):
         encoder = vae_mod.Encoder16x16(vae_args['z_dim'], vae_args['hidden_dim'])
 
     vae = vae_mod.VAE(encoder, decoder, device=device)
-    vae.load_state_dict(torch.load(os.path.join(path, 'vae_params.torch')))
-
+    if device:
+        vae.load_state_dict(torch.load(os.path.join(path, 'vae_params.torch'),map_location=device))
+    else:
+        vae.load_state_dict(torch.load(os.path.join(path, 'vae_params.torch')))
     return vae
 
 
