@@ -35,6 +35,9 @@ def train(trainloader, testloader, vae, optimizer, scheduler, criterion, args, D
             optimizer.zero_grad()
             x = x.to(vae.device)
             [z_mu, z_var], [x_mu, x_var] = vae(x)
+            # including a variance lets the model incorporate how certain it is about its prediction
+            # since small variance leads to more weight closer to mean  
+            # and a high variance makes the mean less relevant 
             likelihood = dist.Normal(x_mu, torch.sqrt(x_var)).log_prob(x).sum()
             kl = dist.kl_divergence(dist.Normal(z_mu, torch.sqrt(z_var)), prior).sum()
             loss = -likelihood + kl
