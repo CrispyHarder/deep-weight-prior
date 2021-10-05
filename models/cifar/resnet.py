@@ -105,6 +105,15 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def mult_weights_init(self, init_mode, init_root, device):
+        '''initialises the layers of the resnet
+        Args: 
+            init_mode (str): how to initialise´
+            init_root (str): the path to the folder containing the layer directories
+            device (torch.device): the device to load the vaes'''
+        # Since the Resnets are always initialised with he- init at contruction,
+        #  we dont have to do anything
+        if init_mode == 'he':
+            return
         self.apply(utils.weight_init(module=nn.Conv2d, initf=nn.init.xavier_normal_))
         self.apply(utils.weight_init(module=nn.Linear, initf=nn.init.xavier_normal_))
 

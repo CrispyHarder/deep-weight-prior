@@ -58,7 +58,7 @@ parser.add_argument('--hid_dim', default=[32, 64], type=int, nargs='+')
 parser.add_argument('--n_classes', default=10, type=int)
 parser.add_argument('--do', default=[], type=float, nargs='*')
 
-#model init settings single init
+#model init settings SINGLE init
 parser.add_argument('--pretrained', default='')
 parser.add_argument('--filters_list', default=[], nargs='*', type=str)
 parser.add_argument('--init', default='xavier')
@@ -66,7 +66,7 @@ parser.add_argument('--init_list', type=str, nargs='*', default=[])
 parser.add_argument('--vae', default='')
 parser.add_argument('--vae_list', type=str, nargs='*', default=[])
 
-#model init settings multi init
+#model init settings MULTI init (if used, single init is ignored)
 parser.add_argument('--mult_init', default= 1, type = int)
 parser.add_argument('--mult_init_mode', default= 'xavier', type = str)
 parser.add_argument('--mult_init_root', type=str, default='')
