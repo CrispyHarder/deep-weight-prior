@@ -28,12 +28,13 @@ parser.add_argument('--lr_decay_step', default=int(11e8), type=int)
 parser.add_argument('--decay', default=0.5, type=float)
 parser.add_argument('--var', default='train')
 parser.add_argument('--add_save_path',default='')
+parser.add_argument('--vae_spec', type=str, help='suffix for saving the vae')
 
 args = parser.parse_args()
 data_root_path = args.data_dir
 for layer in os.listdir(data_root_path):
     data_path = os.path.join(data_root_path,layer,'conv')
-    vae_save_path = os.path.join(data_root_path,layer,'vae')
+    vae_save_path = os.path.join(data_root_path,layer,'vae{}'.format(args.vae_spec))
     if not os.path.exists(vae_save_path):
         os.makedirs(vae_save_path)
     setattr(args,'data_dir',data_path)
