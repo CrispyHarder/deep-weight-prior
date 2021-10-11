@@ -1,3 +1,6 @@
+# File to plot the reconstruction error of the vaes in comparison to 
+# the mean of the slice values/ the intensity of the slices
+
 import os
 import numpy as np
 import torch

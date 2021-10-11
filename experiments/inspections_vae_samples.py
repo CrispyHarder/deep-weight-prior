@@ -1,3 +1,7 @@
+# Takes a path to vae models for multiple layers and prints reconstruction and 
+# samples in a structured way to do visual inspection of the vae reconstruction 
+# and generative quality
+
 import os
 import numpy as np
 import torch

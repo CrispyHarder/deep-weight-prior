@@ -1,3 +1,6 @@
+# File to filter out runs using e.g. specific initialisations and comparing the 
+# convergence of multiple models 
+
 import os 
 import pandas
 import numpy as np
