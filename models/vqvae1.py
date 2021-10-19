@@ -1,11 +1,12 @@
 import torch
 import torch.nn as nn
-from vq import VectorQuantizer,VectorQuantizerEMA
+from models.vq import VectorQuantizer,VectorQuantizerEMA
 
 
 class Encoder3x3(nn.Module):
     def __init__(self, z_dim, hidden_dim):
         super(Encoder3x3, self).__init__()
+        self.z_dim = z_dim
         self.encoder = nn.Sequential(
             nn.Conv2d(1, hidden_dim, 3, padding=1),
             nn.ELU(),
