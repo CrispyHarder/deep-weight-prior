@@ -32,6 +32,7 @@ parser.add_argument('--vqvae_arch', type=str, help='which vqvae architecture is 
 parser.add_argument('--vqvae_spec', type=str, help='which paramter version')
 parser.add_argument('--num_embeddings', type=int, default=128)
 parser.add_argument('--ema_decay', type= float, default=0.)
+parser.add_argument('--commitment_cost', type=float, default=0.25)
 
 args = parser.parse_args()
 data_root_path = args.data_dir
