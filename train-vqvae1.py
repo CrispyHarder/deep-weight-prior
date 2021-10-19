@@ -53,16 +53,16 @@ def train(trainloader, testloader, vqvae, optimizer, scheduler, criterion, args,
         test_perplexity = utils.MovingMetric()
         test_loss = utils.MovingMetric()
 
-        for i, x_test in enumerate(testloader):
-            x_test = x_test.to(vqvae.device)
-            test_vq_loss, test_x_recon, test_perplexity = vqvae(x_test)
-            test_recon_loss = F.mse_loss(x_test,test_x_recon)
-            test_loss = test_vq_loss + test_recon_loss
+        for i, x in enumerate(testloader):
+            x = x.to(vqvae.device)
+            vq_loss, x_recon, perplexity = vqvae(x)
+            recon_loss = F.mse_loss(x,x_recon)
+            loss = vq_loss + recon_loss
 
-            test_recon_loss.add(test_recon_loss.item(), x_test.size(0))
-            test_vq_loss.add(test_vq_loss.item(), x_test.size(0))
-            test_perplexity.add(test_perplexity.item(), x_test.size(0))
-            test_loss.add(test_loss.item(),x_test.size(0))
+            test_recon_loss.add(recon_loss.item(), x.size(0))
+            test_vq_loss.add(vq_loss.item(), x.size(0))
+            test_perplexity.add(perplexity.item(), x.size(0))
+            test_loss.add(loss.item(),x.size(0))
         
         train_recon_loss = train_recon_loss.get_val()
         test_recon_loss = test_recon_loss.get_val()
