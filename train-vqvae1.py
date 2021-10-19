@@ -172,8 +172,8 @@ if __name__ == '__main__':
 
     vqvae = vqvae1.VQVAE(encoder, decoder, args.num_embeddings, args.commitment_cost, 
             device=device, decay=args.ema_decay)
-    if args.resume_vae:
-        vqvae.load_state_dict(torch.load(args.resume_vae))
+    if args.resume:
+        vqvae.load_state_dict(torch.load(args.resume))
 
     optimizer = torch.optim.Adam(vqvae.parameters(), lr=args.lr)
     if args.resume_opt:
