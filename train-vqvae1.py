@@ -46,7 +46,7 @@ def train(trainloader, testloader, vqvae, optimizer, scheduler, criterion, args,
             train_recon_loss.add(recon_loss.item(), x.size(0))
             train_vq_loss.add(vq_loss.item(), x.size(0))
             train_perplexity.add(perplexity.item(), x.size(0))
-            train_loss.add(loss.item(),x.size())
+            train_loss.add(loss.item(),x.size(0))
 
         test_recon_loss = utils.MovingMetric()
         test_vq_loss = utils.MovingMetric()
@@ -62,7 +62,7 @@ def train(trainloader, testloader, vqvae, optimizer, scheduler, criterion, args,
             test_recon_loss.add(test_recon_loss.item(), x_test.size(0))
             test_vq_loss.add(test_vq_loss.item(), x_test.size(0))
             test_perplexity.add(test_perplexity.item(), x_test.size(0))
-            test_loss.add(test_loss.item(),x_test.size())
+            test_loss.add(test_loss.item(),x_test.size(0))
 
         test_likelihood = test_likelihood.get_val()
         
