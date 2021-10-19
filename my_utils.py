@@ -1,3 +1,4 @@
+import shutil
 import torch 
 from models.cifar import resnet
 import yaml
@@ -84,5 +85,7 @@ def load_resnet_from_checkpoint(checkpoint_path, model_type, dataset_name):
 def save_args_params(args, dir_path):
     dumbd = args.__dict__.copy()
     path = os.path.join(dir_path,'params.yaml')
+    if os.path.exists(path):
+        os.remove(path)
     with open(path,'a') as f:
         yaml.dump(dumbd,f)
