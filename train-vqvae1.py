@@ -63,8 +63,6 @@ def train(trainloader, testloader, vqvae, optimizer, scheduler, criterion, args,
             test_vq_loss.add(test_vq_loss.item(), x_test.size(0))
             test_perplexity.add(test_perplexity.item(), x_test.size(0))
             test_loss.add(test_loss.item(),x_test.size(0))
-
-        test_likelihood = test_likelihood.get_val()
         
         train_recon_loss = train_recon_loss.get_val()
         test_recon_loss = test_recon_loss.get_val()
