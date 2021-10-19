@@ -28,7 +28,8 @@ parser.add_argument('--lr_decay_step', default=int(11e8), type=int)
 parser.add_argument('--decay', default=0.5, type=float)
 parser.add_argument('--var', default='train')
 parser.add_argument('--add_save_path',default='')
-parser.add_argument('--vqvae_spec', type=str, help='suffix for saving the vqvae')
+parser.add_argument('--vqvae_arch', type=str, help='which vqvae architecture is used')
+parser.add_argument('--vqvae_spec', type=str, help='which paramter version')
 parser.add_argument('--num_embeddings', type=int, default=128)
 parser.add_argument('--ema_decay', type= float, default=0.)
 
@@ -36,10 +37,10 @@ args = parser.parse_args()
 data_root_path = args.data_dir
 for layer in os.listdir(data_root_path):
     data_path = os.path.join(data_root_path,layer,'conv')
-    vqvae_save_path = os.path.join(data_root_path,layer,'vqvae{}'.format(args.vqvae_spec))
+    vqvae_save_path = os.path.join(data_root_path,layer,'vqvae{}'.format(args.vqvae_arch),'{}'.format(args.vqvae_spec))
     if not os.path.exists(vqvae_save_path):
         os.makedirs(vqvae_save_path)
     setattr(args,'data_dir',data_path)
     setattr(args, 'add_save_path',vqvae_save_path)
-    run_train_vqvae(args,args.vqvae_spec)
+    run_train_vqvae(args,args.vqvae_arch)
 
