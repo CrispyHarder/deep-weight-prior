@@ -22,6 +22,7 @@ If you use this implementation in you work, please don't forget to mention the
 author, Yerlan Idelbayev.
 '''
 import torch
+from torch._C import short
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
@@ -131,13 +132,18 @@ class ResNet(nn.Module):
                     z = torch.randn(w.size(0) * w.size(1), vae.encoder.z_dim, 1, 1).cuda()
                     x = vae.decode(z)[0]
                     sd[params] = x.reshape(w.shape)
+                elif init == 'xavier':
+                    pass
+                elif init.startswith('vqvae1'):
+                    vqvae_path = short_path
+                    vqvae = utils.load_vqvae1(vqvae_path,device=device)
+                    x = vqvae.sample(w.size(0) * w.size(1),device=device)
+                    sd[params] = x.reshape(w.shape)
                 elif init == 'flow':
                     #deprecated 
                     flow_path = short_path
                     flow = utils.load_flow(flow_path, device=self.device)
-                    utils.flow_init(flow)(w)
-                elif init == 'xavier':
-                    pass
+                    utils.flow_init(flow)(w)   
                 elif init == 'filters':
                     #deprecated
                     filters = np.load(os.path.join(short_path,'filters.torch'))

@@ -43,6 +43,8 @@ class VQVAE(nn.Module):
         # depricated
         self.use_cuda = use_cuda
 
+        self.num_embeddings = num_embeddings
+
         self.encoder = encoder
         self.decoder = decoder
         # we construct the vqvae in such a way that the z dim of the encoder is also the embedding dim
@@ -68,3 +70,21 @@ class VQVAE(nn.Module):
         x_recon = self.decoder(quantized)
 
         return vq_loss, x_recon, perplexity
+
+    def sample(self, num_samples, device=None):
+        """
+        Samples from the latent space and return the corresponding
+        image space map.
+        :param num_samples: (Int) Number of samples
+        :param current_device: (Int) Device to run the model
+        :return: (Tensor)
+        """
+        sampled_indices = torch.randint(0,self.num_embeddings,(num_samples,9))
+        codebook_vecs = self._vq_vae._embedding(sampled_indices)
+        codebook_vecs = codebook_vecs.view(-1,self.embedding_dim,3,3)
+
+        if device:
+            codebook_vecs = codebook_vecs.to(device)
+
+        samples = self.decode(codebook_vecs)
+        return samples
