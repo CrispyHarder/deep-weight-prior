@@ -38,7 +38,7 @@ args = parser.parse_args()
 data_root_path = args.data_dir
 for layer in os.listdir(data_root_path):
     data_path = os.path.join(data_root_path,layer,'conv')
-    vqvae_save_path = os.path.join(data_root_path,layer,'vqvae{}'.format(args.vqvae_arch),'{}'.format(args.vqvae_spec))
+    vqvae_save_path = os.path.join(data_root_path,layer,'vqvae{}.{}'.format(args.vqvae_arch,args.vqvae_spec))
     if not os.path.exists(vqvae_save_path):
         os.makedirs(vqvae_save_path)
     setattr(args,'data_dir',data_path)
