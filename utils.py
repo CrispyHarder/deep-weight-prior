@@ -436,7 +436,7 @@ def load_vqvae1(path, device=None):
         encoder = vqvae1_mod.Encoder3x3(args['z_dim'], args['hidden_dim']) 
     
     vqvae = vqvae1_mod.VQVAE(encoder, decoder, args['num_embeddings'], args['commitment_cost'],
-        device=device, decay=args['decay'])
+        device=device, decay=args['ema_decay'])
 
     if device:
         vqvae.load_state_dict(torch.load(os.path.join(path, 'vqvae_params.torch'),map_location=device))
