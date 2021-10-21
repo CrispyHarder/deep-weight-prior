@@ -41,5 +41,5 @@ for i,m_name in enumerate(METR_NAMES):
         plt.plot(data[j][:,i],label=init)
     plt.title('{} convergence comparison'.format(m_name))
     plt.legend(loc='lower right')
-    plt.savefig(os.path.join('..','..','small-results','14.10.2021','he_xav_vae init comparison',m_name))
+    plt.savefig(os.path.join(SAVE_PATH,m_name))
     plt.show()
