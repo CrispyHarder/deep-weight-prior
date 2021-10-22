@@ -1,3 +1,6 @@
+# In one forward pass of the network we calculate all of 
+# the probabilities of p(x|...), for all conditionals in one forward pass
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
