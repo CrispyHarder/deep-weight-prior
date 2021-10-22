@@ -39,13 +39,21 @@ parser.add_argument('--start_at_layer', type=int, default=0, help='''at which la
 
 args = parser.parse_args()
 data_root_path = args.data_dir
-for layer in sorted_alphanumeric(os.listdir(data_root_path))[args.start_at_layer:]:
+start_layer = args.start_at_layer
+arch = args.vqvae_arch
+spec = args.vqvae_spec 
+
+delattr(args,'start_at_layer')
+delattr(args,'vqvae_arch')
+delattr(args,'vqvae_spec')
+
+for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:]:
     data_path = os.path.join(data_root_path,layer,'conv')
     vqvae_save_path = os.path.join(data_root_path,layer,
-                        'vqvae{}.{}'.format(args.vqvae_arch,args.vqvae_spec))
+                        'vqvae{}.{}'.format(arch,spec))
     if not os.path.exists(vqvae_save_path):
         os.makedirs(vqvae_save_path)
     setattr(args,'data_dir',data_path)
     setattr(args, 'add_save_path',vqvae_save_path)
-    run_train_vqvae(args,args.vqvae_arch)
+    run_train_vqvae(args,arch)
 
