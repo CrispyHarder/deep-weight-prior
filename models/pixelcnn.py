@@ -25,7 +25,7 @@ class GatedActivation(nn.Module):
 
     def forward(self, x):
         x, y = x.chunk(2, dim=1)
-        return F.tanh(x) * F.sigmoid(y)
+        return torch.tanh(x) * torch.sigmoid(y)
 
 
 class GatedMaskedConv2d(nn.Module):
@@ -129,12 +129,14 @@ class GatedPixelCNN(nn.Module):
         return self.output_conv(x_h)
 
     def generate(self, label, shape=(8, 8), batch_size=64):
+        '''generates batch_size many images, each with shape'''
         param = next(self.parameters())
-        x = torch.zeros(
+        x = torch.ones(
             (batch_size, *shape),
             dtype=torch.int64, device=param.device
-        )
-
+        ) * 0
+        ##the number above is to init the sampling process,
+        #whether 0 is needed i not clear yet
         for i in range(shape[0]):
             for j in range(shape[1]):
                 logits = self.forward(x, label)
