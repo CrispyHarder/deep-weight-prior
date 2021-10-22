@@ -38,10 +38,14 @@ class GatedMaskedConv2d(nn.Module):
         self.mask_type = mask_type
         self.residual = residual
 
+        # class conditional embedding, probably not needed for me 
+        # for now, but lets the class influence the output
         self.class_cond_embedding = nn.Embedding(
             n_classes, 2 * dim
         )
 
+        # vertical convolution, where the filter has 'half' the height 
+        # and full width, padding probably accordingly to keep shape 
         kernel_shp = (kernel // 2 + 1, kernel)  # (ceil(n/2), n)
         padding_shp = (kernel // 2, kernel // 2)
         self.vert_stack = nn.Conv2d(
@@ -49,8 +53,12 @@ class GatedMaskedConv2d(nn.Module):
             kernel_shp, 1, padding_shp
         )
 
+        #this is the part where the vertical convolution influences the 
+        #horizontal convolution
         self.vert_to_horiz = nn.Conv2d(2 * dim, 2 * dim, 1)
 
+        # here is the horizontal convolution, kernel has height 1 
+        # and width of about half kernel size
         kernel_shp = (1, kernel // 2 + 1)
         padding_shp = (0, kernel // 2)
         self.horiz_stack = nn.Conv2d(
@@ -121,10 +129,12 @@ class GatedPixelCNN(nn.Module):
         self.apply(weights_init)
 
     def forward(self, x, label):
+        #first the input gets encoded into vectors
         shp = x.size() + (-1, )
         x = self.embedding(x.view(-1)).view(shp)  # (B, H, W, C)
         x = x.permute(0, 3, 1, 2)  # (B, C, W, W)
 
+        #then the embedded vectors are fed into the network
         x_v, x_h = (x, x)
         for i, layer in enumerate(self.layers):
             x_v, x_h = layer(x_v, x_h, label)
