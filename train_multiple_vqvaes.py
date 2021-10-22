@@ -1,6 +1,7 @@
 ## Wrapper script to use the structure of the parser in train-vqvae1.py
 import argparse
 import os 
+from my_utils import sorted_alphanumeric
 
 def run_train_vqvae(args,spec):
     string = 'python train-vqvae{}.py'.format(spec)
@@ -33,12 +34,15 @@ parser.add_argument('--vqvae_spec', type=str, help='which paramter version')
 parser.add_argument('--num_embeddings', type=int, default=128)
 parser.add_argument('--ema_decay', type= float, default=0.)
 parser.add_argument('--commitment_cost', type=float, default=0.25)
+parser.add_argument('--start_at_layer', type=int, default=0, help='''at which layer the 
+                        vqvaes should be started to train ''')
 
 args = parser.parse_args()
 data_root_path = args.data_dir
-for layer in os.listdir(data_root_path):
+for layer in sorted_alphanumeric(os.listdir(data_root_path))[args.start_at_layer:]:
     data_path = os.path.join(data_root_path,layer,'conv')
-    vqvae_save_path = os.path.join(data_root_path,layer,'vqvae{}.{}'.format(args.vqvae_arch,args.vqvae_spec))
+    vqvae_save_path = os.path.join(data_root_path,layer,
+                        'vqvae{}.{}'.format(args.vqvae_arch,args.vqvae_spec))
     if not os.path.exists(vqvae_save_path):
         os.makedirs(vqvae_save_path)
     setattr(args,'data_dir',data_path)
