@@ -16,8 +16,7 @@ def weights_init(m):
             nn.init.xavier_uniform_(m.weight.data)
             m.bias.data.fill_(0)
         except AttributeError:
-            pass
-            # print("Skipping initialization of ", classname)
+            print("Skipping initialization of ", classname)
 
 
 class GatedActivation(nn.Module):
