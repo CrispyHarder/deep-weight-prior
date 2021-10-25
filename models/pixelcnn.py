@@ -112,7 +112,7 @@ class GatedPixelCNN(nn.Module):
         # Rest with Mask-B convolutions
         for i in range(n_layers):
             mask_type = 'A' if i == 0 else 'B'
-            kernel = 7 if i == 0 else 3
+            kernel = 3 if i == 0 else 3
             residual = False if i == 0 else True
 
             self.layers.append(
