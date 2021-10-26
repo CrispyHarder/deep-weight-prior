@@ -32,7 +32,7 @@ class GatedActivation(nn.Module):
 
 
 class GatedMaskedConv2d(nn.Module):
-    def __init__(self, mask_type, dim, kernel, residual=True, n_classes=10):
+    def __init__(self, mask_type, dim, kernel, residual=True):
         super().__init__()
         assert kernel % 2 == 1, print("Kernel size must be odd")
         self.mask_type = mask_type
@@ -74,20 +74,20 @@ class GatedMaskedConv2d(nn.Module):
         self.vert_stack.weight.data[:, :, -1].zero_()  # Mask final row
         self.horiz_stack.weight.data[:, :, :, -1].zero_()  # Mask final column
 
-    def forward(self, x_v, x_h, h):
+    def forward(self, x_v, x_h):
         if self.mask_type == 'A':
             self.make_causal()
 
         h = self.class_cond_embedding(h)
         h_vert = self.vert_stack(x_v)
         h_vert = h_vert[:, :, :x_v.size(-1), :]
-        out_v = self.gate(h_vert + h[:, :, None, None])
+        out_v = self.gate(h_vert)
 
         h_horiz = self.horiz_stack(x_h)
         h_horiz = h_horiz[:, :, :, :x_h.size(-2)]
         v2h = self.vert_to_horiz(h_vert)
 
-        out = self.gate(v2h + h_horiz + h[:, :, None, None])
+        out = self.gate(v2h + h_horiz)
         if self.residual:
             out_h = self.horiz_resid(out) + x_h
         else:
@@ -97,7 +97,7 @@ class GatedMaskedConv2d(nn.Module):
 
 
 class GatedPixelCNN(nn.Module):
-    def __init__(self, input_dim=256, dim=64, n_layers=15, n_classes=10):
+    def __init__(self, input_dim=256, dim=64, n_layers=15):
         super().__init__()
         self.dim = dim
 
@@ -116,7 +116,7 @@ class GatedPixelCNN(nn.Module):
             residual = False if i == 0 else True
 
             self.layers.append(
-                GatedMaskedConv2d(mask_type, dim, kernel, residual, n_classes)
+                GatedMaskedConv2d(mask_type, dim, kernel, residual)
             )
 
         # Add the output layer
@@ -128,7 +128,7 @@ class GatedPixelCNN(nn.Module):
 
         self.apply(weights_init)
 
-    def forward(self, x, label):
+    def forward(self, x):
         #first the input gets encoded into vectors
         shp = x.size() + (-1, )
         x = self.embedding(x.view(-1)).view(shp)  # (B, H, W, C)
@@ -137,11 +137,11 @@ class GatedPixelCNN(nn.Module):
         #then the embedded vectors are fed into the network
         x_v, x_h = (x, x)
         for i, layer in enumerate(self.layers):
-            x_v, x_h = layer(x_v, x_h, label)
+            x_v, x_h = layer(x_v, x_h)
 
         return self.output_conv(x_h)
 
-    def generate(self, label, shape=(8, 8), batch_size=64):
+    def generate(self, shape=(8, 8), batch_size=64):
         '''generates batch_size many images, each with shape'''
         param = next(self.parameters())
         x = torch.ones(
@@ -152,7 +152,7 @@ class GatedPixelCNN(nn.Module):
         #whether 0 is needed i not clear yet
         for i in range(shape[0]):
             for j in range(shape[1]):
-                logits = self.forward(x, label)
+                logits = self.forward(x)
                 probs = F.softmax(logits[:, :, i, j], -1)
                 x.data[:, i, j].copy_(
                     probs.multinomial(1).squeeze().data
