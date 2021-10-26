@@ -38,12 +38,6 @@ class GatedMaskedConv2d(nn.Module):
         self.mask_type = mask_type
         self.residual = residual
 
-        # class conditional embedding, probably not needed for me 
-        # for now, but lets the class influence the output
-        self.class_cond_embedding = nn.Embedding(
-            n_classes, 2 * dim
-        )
-
         # vertical convolution, where the filter has 'half' the height 
         # and full width, padding probably accordingly to keep shape 
         kernel_shp = (kernel // 2 + 1, kernel)  # (ceil(n/2), n)
@@ -78,7 +72,6 @@ class GatedMaskedConv2d(nn.Module):
         if self.mask_type == 'A':
             self.make_causal()
 
-        h = self.class_cond_embedding(h)
         h_vert = self.vert_stack(x_v)
         h_vert = h_vert[:, :, :x_v.size(-1), :]
         out_v = self.gate(h_vert)
