@@ -3,8 +3,8 @@ import argparse
 import os 
 from my_utils import sorted_alphanumeric
 
-def run_train_vqvae(args,spec):
-    string = 'python train-vqvae{}.py'.format(spec)
+def run_train_vqvae(args,arch):
+    string = 'python train-vqvae{}.py'.format(arch)
     for arg in vars(args):
         string += ' --'+str(arg)+' '+str(getattr(args,arg))
     os.system(string)
