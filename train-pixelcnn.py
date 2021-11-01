@@ -84,8 +84,6 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', default=128, type=int)
     parser.add_argument('--seed', default=42, type=int)
     parser.add_argument('--gpu_id', default='0')
-    parser.add_argument('--kernel_dim', default=16, type=int,
-                        help='the dimension of the kernels to learn')
 
     #for eval (outputs)
     parser.add_argument('--eval_freq', default=1, type=int)
@@ -119,8 +117,6 @@ if __name__ == '__main__':
     if args.data_dir:
         trainloader, D = utils.get_dataloader(os.path.join(args.data_dir, 'train.npy'), args.batch_size, shuffle=True)
         testloader, D = utils.get_dataloader(os.path.join(args.data_dir, 'test.npy'), args.test_bs, shuffle=False)
-
-    assert args.kernel_dim == D, '--kernel-dim != D (in dataset)'
 
     pixel = pixelcnn.GatedPixelCNN(input_dim=args.input_dim,dim=args.dim,n_layers=args.n_layers)
 
