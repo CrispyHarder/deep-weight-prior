@@ -23,7 +23,7 @@ def train(trainloader, testloader, pixelcnn, optimizer, args):
             logits = logits.permute(0,2,3,1).contiguous() 
 
             optimizer.zero_grad()
-            loss = F.cross_entropy(logits.view(-1, args.k),latents.view(-1))
+            loss = F.cross_entropy(logits.view(-1, args.input_dim),latents.view(-1))
             loss.backward()
             optimizer.step()
 
@@ -34,7 +34,7 @@ def train(trainloader, testloader, pixelcnn, optimizer, args):
                 latents = latents.long()
                 logits = pixelcnn(latents)
                 logits = logits.permute(0,2,3,1).contiguous() 
-                t_loss = F.cross_entropy(logits.view(-1, args.k),latents.view(-1))
+                t_loss = F.cross_entropy(logits.view(-1, args.input_dim),latents.view(-1))
 
             test_loss.add(t_loss.item(), latents.size(0))
 
