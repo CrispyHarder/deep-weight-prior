@@ -18,6 +18,7 @@ def train(trainloader, testloader, pixelcnn, optimizer, args):
         test_loss = utils.MovingMetric()
 
         for i,latents in enumerate(trainloader):
+            latents = latents.long()
             logits = pixelcnn(latents)
             logits = logits.permute(0,2,3,1).contiguous() 
 
@@ -30,6 +31,7 @@ def train(trainloader, testloader, pixelcnn, optimizer, args):
 
         for i,latents in enumerate(testloader):
             with torch.no_grad():
+                latents = latents.long()
                 logits = pixelcnn(latents)
                 logits = logits.permute(0,2,3,1).contiguous() 
                 t_loss = F.cross_entropy(logits.view(-1, args.k),latents.view(-1))
