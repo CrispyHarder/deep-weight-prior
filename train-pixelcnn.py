@@ -9,12 +9,11 @@ import myexman
 from my_utils import save_args_params
 
 
-def train(trainloader, testloader, pixelcnn, optimizer, scheduler, args):
+def train(trainloader, testloader, pixelcnn, optimizer, args):
     logger = Logger(name='logs', base=args.root)
     best_loss = 1000
     for epoch in range(1, args.num_epochs + 1):
         adjust_learning_rate(optimizer, lr_linear(epoch))
-        scheduler.step()
         train_loss = utils.MovingMetric()
         test_loss = utils.MovingMetric()
 
@@ -122,6 +121,4 @@ if __name__ == '__main__':
 
     optimizer = torch.optim.Adam(pixel.parameters(), lr=args.lr)
 
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, args.lr_decay_step, args.decay)
-
-    train(trainloader, testloader, pixel, optimizer, scheduler, args)
+    train(trainloader, testloader, pixel, optimizer, args)
