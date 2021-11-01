@@ -32,8 +32,10 @@ def extract_latents_from_model(layer_dir, vq_name, slice_dir, device, args):
     train_latents = []
     test_latents = []
     for _,x in enumerate(trainloader):
+        x.to(device)
         train_latents.append(vqvae._vq_vae(vqvae.encode(x))[-1].argmax(dim=1).view(-1,3,3))
     for _,x in enumerate(testloader):
+        x.to(device)
         test_latents.append(vqvae._vq_vae(vqvae.encode(x))[-1].argmax(dim=1).view(-1,3,3))
     
     train_latents = torch.cat(train_latents)
