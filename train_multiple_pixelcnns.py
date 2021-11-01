@@ -11,14 +11,14 @@ import numpy as np
 from utils import load_vqvae1
 from my_utils import sorted_alphanumeric
 
-def load_vqvae_model(vq_dir,vq_name,args):
+def load_vqvae_model(vq_dir,vq_name,device):
     if vq_name.startswith('vqvae1'):
-        vqvae = load_vqvae1(vq_dir,args.device)
+        vqvae = load_vqvae1(vq_dir,device)
     else:
         raise NotImplementedError('no {} init'.format(vq_arch))
     return vqvae
 
-def extract_latents_from_model(layer_dir, vq_name, slice_dir, args):
+def extract_latents_from_model(layer_dir, vq_name, slice_dir, device, args):
     '''saves two numpy arrays containing all the latents of the train and testdata'''
     #load data 
     trainloader, _ = utils.get_dataloader(os.path.join(slice_dir, 'train.npy'), args.batch_size, shuffle=False)
@@ -26,7 +26,7 @@ def extract_latents_from_model(layer_dir, vq_name, slice_dir, args):
 
     #load model 
     vq_dir = os.path.join(layer_dir,vq_name)
-    vqvae = load_vqvae_model(vq_dir,vq_name,args)
+    vqvae = load_vqvae_model(vq_dir,vq_name,device)
 
     #get the latents by going over train and testloader
     train_latents = []
@@ -48,10 +48,10 @@ def extract_latents_from_model(layer_dir, vq_name, slice_dir, args):
     np.save(os.path.join(latent_dir,'train'),train_latents)
     np.save(os.path.join(latent_dir,'test'),test_latents)
 
-def get_input_dim(args):
+def get_input_dim(device,args):
     vq_dir = os.path.join(args.data_root_path,'layer_0',
                         'vqvae{}.{}'.format(args.vqvae_arch,args.vqvae_spec))
-    vqvae = load_vqvae_model(vq_dir,args.vqvae_arch,args)
+    vqvae = load_vqvae_model(vq_dir,args.vqvae_arch,device)
     return vqvae.num_embeddings
 
 def run_train_pixelcnn(args):
@@ -98,6 +98,8 @@ parser.add_argument('--input_dim',type=int, default=0,
 
 args = parser.parse_args()
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 data_root_path = args.data_root_path
 start_layer = args.start_at_layer
 vq_arch = args.vqvae_arch
@@ -105,7 +107,7 @@ vq_spec = args.vqvae_spec
 pix_spec = args.pixelcnn_spec
 vq_name = vq_arch+vq_spec
 #get the number of codebook vectors in the vq model
-setattr(args,'input_dim',get_input_dim(args))
+setattr(args,'input_dim',get_input_dim(device,args))
 
 for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:]:
     #set and make paths 
@@ -121,7 +123,7 @@ for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:]:
     #check whether data already exists, otherwise extract the latents
     slice_dir = os.path.join(data_root_path,layer,'conv')
     if not os.path.exists(data_path):
-        extract_latents_from_model(os.path.join(data_root_path,layer),vq_name,slice_dir,args)
+        extract_latents_from_model(os.path.join(data_root_path,layer),vq_name,slice_dir,device,args)
 
     #change some args
     setattr(args,'data_dir',data_path)
