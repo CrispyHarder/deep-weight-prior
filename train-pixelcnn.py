@@ -9,83 +9,56 @@ import myexman
 from my_utils import save_args_params
 
 
-def train(trainloader, testloader, vqvae, optimizer, scheduler, criterion, args, D):
+def train(trainloader, testloader, pixelcnn, optimizer, scheduler, args):
     logger = Logger(name='logs', base=args.root)
-    best_loss = 1000000
+    best_loss = 1000
     for epoch in range(1, args.num_epochs + 1):
         adjust_learning_rate(optimizer, lr_linear(epoch))
         scheduler.step()
-        train_recon_loss = utils.MovingMetric()
-        train_vq_loss = utils.MovingMetric()
-        train_perplexity = utils.MovingMetric()
         train_loss = utils.MovingMetric()
+        test_loss = utils.MovingMetric()
 
-        for i, x in enumerate(trainloader):
+        for i,latents in enumerate(trainloader):
+            logits = pixelcnn(latents)
+            logits = logits.permute(0,2,3,1).contiguous() 
+
             optimizer.zero_grad()
-            x = x.to(vqvae.device)
-            vq_loss, x_recon, perplexity = vqvae(x) 
-            recon_loss = F.mse_loss(x,x_recon)
-            loss = vq_loss + recon_loss
-
+            loss = F.cross_entropy(logits.view(-1, args.k),latents.view(-1))
             loss.backward()
             optimizer.step()
 
-            train_recon_loss.add(recon_loss.item(), x.size(0))
-            train_vq_loss.add(vq_loss.item(), x.size(0))
-            train_perplexity.add(perplexity.item(), x.size(0))
-            train_loss.add(loss.item(),x.size(0))
+            train_loss.add(loss.item(), latents.size(0))
 
-        test_recon_loss = utils.MovingMetric()
-        test_vq_loss = utils.MovingMetric()
-        test_perplexity = utils.MovingMetric()
-        test_loss = utils.MovingMetric()
+        for i,latents in enumerate(testloader):
+            with torch.no_grad():
+                logits = pixelcnn(latents)
+                logits = logits.permute(0,2,3,1).contiguous() 
+                t_loss = F.cross_entropy(logits.view(-1, args.k),latents.view(-1))
 
-        for i, x in enumerate(testloader):
-            x = x.to(vqvae.device)
-            vq_loss, x_recon, perplexity = vqvae(x)
-            recon_loss = F.mse_loss(x,x_recon)
-            loss = vq_loss + recon_loss
+            test_loss.add(t_loss.item(), latents.size(0))
 
-            test_recon_loss.add(recon_loss.item(), x.size(0))
-            test_vq_loss.add(vq_loss.item(), x.size(0))
-            test_perplexity.add(perplexity.item(), x.size(0))
-            test_loss.add(loss.item(),x.size(0))
-        
-        train_recon_loss = train_recon_loss.get_val()
-        test_recon_loss = test_recon_loss.get_val()
-        train_vq_loss = train_vq_loss.get_val()
-        test_vq_loss = test_vq_loss.get_val()
-        train_perplexity = train_perplexity.get_val()
-        test_perplexity = test_perplexity.get_val()
         train_loss = train_loss.get_val()
         test_loss = test_loss.get_val()
 
-        logger.add_scalar(epoch, 'train_recon_loss', train_recon_loss)
-        logger.add_scalar(epoch, 'train_vq_loss', train_vq_loss)
-        logger.add_scalar(epoch, 'train_perplexity', train_perplexity)
         logger.add_scalar(epoch, 'train_loss', train_loss)
-
-        logger.add_scalar(epoch, 'test_recon_loss', test_recon_loss)
-        logger.add_scalar(epoch, 'test_vq_loss', test_vq_loss)
-        logger.add_scalar(epoch, 'test_perplexity', test_perplexity)
         logger.add_scalar(epoch, 'test_loss', test_loss)
 
         logger.iter_info()
         logger.save()
 
         if (epoch-1) % 10 == 0:
-            torch.save(vqvae.state_dict() , os.path.join(args.root, 'vqvae_params_epoch_{}.torch'.format(epoch)))
+            torch.save(pixelcnn.state_dict() , os.path.join(args.root, 'pixelcnn_params_epoch_{}.torch'.format(epoch)))
             torch.save(optimizer.state_dict(), os.path.join(args.root, 'opt_params_epoch_{}.torch'.format(epoch)))
 
-        is_best = (test_loss < best_loss)
+        is_best = (epoch == 1) or (test_loss < best_loss)
         if is_best:
             best_loss = test_loss
-            torch.save(vqvae.state_dict(), os.path.join(args.root, 'vqvae_params.torch'))   
+            torch.save(pixelcnn.state_dict(), os.path.join(args.root, 'pixelcnn_params.torch'))   
             if args.add_save_path : 
-                torch.save(vqvae.state_dict(), os.path.join(args.add_save_path, 'vqvae_params.torch'))  
+                torch.save(pixelcnn.state_dict(), os.path.join(args.add_save_path, 'pixel_params.torch'))  
    
 
-    torch.save(vqvae.state_dict(), os.path.join(args.root, 'vqvae_params_lastepoch.torch'))
+    torch.save(pixelcnn.state_dict(), os.path.join(args.root, 'pixelcnn_params_lastepoch.torch'))
     torch.save(optimizer.state_dict(), os.path.join(args.root, 'opt_params_lastepoch.torch'))
 
 
@@ -106,8 +79,8 @@ if __name__ == '__main__':
 
     #general training information 
     parser.add_argument('--data_dir', default='')
-    parser.add_argument('--lr', default=0.001, type=float)
-    parser.add_argument('--num_epochs', default=300, type=int)
+    parser.add_argument('--lr', default=3e-4, type=float)
+    parser.add_argument('--num_epochs', default=100, type=int)
     parser.add_argument('--batch_size', default=128, type=int)
     parser.add_argument('--seed', default=42, type=int)
     parser.add_argument('--gpu_id', default='0')
@@ -120,8 +93,10 @@ if __name__ == '__main__':
     parser.add_argument('--verbose', default=1, type=int)
 
     #model spec 
-    parser.add_argument('--input_dim', default=8, type=int)
-    parser.add_argument('--dim', default=16, type=int)
+    parser.add_argument('--input_dim', default=8, type=int,
+                        help='''the size of the codebook of the vqvae''')
+    parser.add_argument('--dim', default=16, type=int,
+                        help='''the hidden size (number of channels per layer)''')
     parser.add_argument('--n_layers', type=int, default=10)
 
 
@@ -152,6 +127,5 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(pixel.parameters(), lr=args.lr)
 
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, args.lr_decay_step, args.decay)
-    criterion = torch.nn.CrossEntropyLoss()
 
-    train(trainloader, testloader, pixel, optimizer, scheduler, criterion, args, D)
+    train(trainloader, testloader, pixel, optimizer, scheduler, args)

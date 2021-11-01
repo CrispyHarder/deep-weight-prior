@@ -4,31 +4,29 @@
 # then train a pixelcnn on that
 
 import argparse
-import enum
 import os 
 import utils
 import torch
 import numpy as np 
 from utils import load_vqvae1
 from my_utils import sorted_alphanumeric
-from models import vqvae1,pixelcnn
 
-def load_vqvae_model(vq_dir,vq_arch,args):
-    if vq_arch.startswith('vqvae1'):
+def load_vqvae_model(vq_dir,vq_name,args):
+    if vq_name.startswith('vqvae1'):
         vqvae = load_vqvae1(vq_dir,args.device)
     else:
         raise NotImplementedError('no {} init'.format(vq_arch))
     return vqvae
 
-def extract_latents_from_model(layer_dir, arch, args):
+def extract_latents_from_model(layer_dir, vq_name, slice_dir, args):
     '''saves two numpy arrays containing all the latents of the train and testdata'''
     #load data 
-    trainloader, _ = utils.get_dataloader(os.path.join(args.data_dir, 'train.npy'), args.batch_size, shuffle=False)
-    testloader, _ = utils.get_dataloader(os.path.join(args.data_dir, 'test.npy'), args.test_bs, shuffle=False)
+    trainloader, _ = utils.get_dataloader(os.path.join(slice_dir, 'train.npy'), args.batch_size, shuffle=False)
+    testloader, _ = utils.get_dataloader(os.path.join(slice_dir, 'test.npy'), args.test_bs, shuffle=False)
 
     #load model 
-    vq_dir = os.path.join(layer_dir,arch)
-    vqvae = load_vqvae_model(vq_dir,args)
+    vq_dir = os.path.join(layer_dir,vq_name)
+    vqvae = load_vqvae_model(vq_dir,vq_name,args)
 
     #get the latents by going over train and testloader
     train_latents = []
@@ -53,7 +51,7 @@ def extract_latents_from_model(layer_dir, arch, args):
 def get_input_dim(args):
     vq_dir = os.path.join(args.data_root_path,'layer_0',
                         'vqvae{}.{}'.format(args.vqvae_arch,args.vqvae_spec))
-    vqvae = load_vqvae_model(vq_dir,args)
+    vqvae = load_vqvae_model(vq_dir,args.vqvae_arch,args)
     return vqvae.num_embeddings
 
 def run_train_pixelcnn(args):
@@ -66,8 +64,8 @@ parser = argparse.ArgumentParser()
 #general training arguments
 parser.add_argument('--data_root_path', default=os.path.join('data','resnet20','3x3'), 
                     help='the dir where all layers are stored')
-parser.add_argument('--lr', default=0.001, type=float)
-parser.add_argument('--num_epochs', default=300, type=int)
+parser.add_argument('--lr', default=3e-4, type=float)
+parser.add_argument('--num_epochs', default=100, type=int)
 parser.add_argument('--batch_size', default=128, type=int)
 parser.add_argument('--seed', default=42, type=int)
 parser.add_argument('--gpu_id', default='0')
@@ -84,13 +82,13 @@ parser.add_argument('--verbose', default=1, type=int)
 
 #model spec 
 parser.add_argument('--pixelcnn_spec', type=str, help='which paramter version of pixelcnn is this')
-parser.add_argument('--z_dim', default=8, type=int)
-parser.add_argument('--hidden_dim', default=16, type=int)
-parser.add_argument('--kernel_dim', default=16, type=int)
+parser.add_argument('--dim', default=64, type=int,
+                    help='''the hidden size (number of channels per layer)''')
+parser.add_argument('--n_layers', type=int, default=10)
 
 # additional info
 parser.add_argument('--start_at_layer', type=int, default=0, help='''at which layer the 
-                        vqvaes should be started to train ''')
+                        pixelcnns should be started to train ''')
 
 #introduced for later use 
 parser.add_argument('--add_save_path',default='')
@@ -105,7 +103,7 @@ start_layer = args.start_at_layer
 vq_arch = args.vqvae_arch
 vq_spec = args.vqvae_spec 
 pix_spec = args.pixelcnn_spec
-
+vq_name = vq_arch+vq_spec
 #get the number of codebook vectors in the vq model
 setattr(args,'input_dim',get_input_dim(args))
 
@@ -120,12 +118,14 @@ for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:]:
     if not os.path.exists(pix_save_path):
         os.makedirs(pix_save_path)
 
+    #check whether data already exists, otherwise extract the latents
+    slice_dir = os.path.join(data_root_path,layer,'conv')
+    if not os.path.exists(data_path):
+        extract_latents_from_model(os.path.join(data_root_path,layer),vq_name,slice_dir,args)
+
     #change some args
     setattr(args,'data_dir',data_path)
     setattr(args, 'add_save_path',pix_save_path)
-
-    #check whether data already exists, otherwise extract the latents
-    extract_latents_from_model(os.path.join(data_root_path,layer),vq_arch,args)
 
     #delete attributes that arent used anymore
     delattr(args,'general_data_dir')
