@@ -131,7 +131,6 @@ for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:]:
     setattr(args, 'add_save_path',pix_save_path)
 
     #delete attributes that arent used anymore
-    delattr(args,'general_data_dir')
     delattr(args,'start_at_layer')
     delattr(args,'vqvae_arch')
     delattr(args,'vqvae_spec')
