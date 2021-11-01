@@ -48,10 +48,9 @@ def extract_latents_from_model(layer_dir, vq_name, slice_dir, device, args):
     np.save(os.path.join(latent_dir,'train'),train_latents)
     np.save(os.path.join(latent_dir,'test'),test_latents)
 
-def get_input_dim(device,args):
-    vq_dir = os.path.join(args.data_root_path,'layer_0',
-                        'vqvae{}.{}'.format(args.vqvae_arch,args.vqvae_spec))
-    vqvae = load_vqvae_model(vq_dir,args.vqvae_arch,device)
+def get_input_dim(device,vq_name):
+    vq_dir = os.path.join(args.data_root_path,'layer_0',vq_name)
+    vqvae = load_vqvae_model(vq_dir,vq_name,device)
     return vqvae.num_embeddings
 
 def run_train_pixelcnn(args):
@@ -107,7 +106,7 @@ vq_spec = args.vqvae_spec
 pix_spec = args.pixelcnn_spec
 vq_name = vq_arch+vq_spec
 #get the number of codebook vectors in the vq model
-setattr(args,'input_dim',get_input_dim(device,args))
+setattr(args,'input_dim',get_input_dim(device,vq_name))
 
 for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:]:
     #set and make paths 
