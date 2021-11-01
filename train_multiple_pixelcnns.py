@@ -104,7 +104,7 @@ start_layer = args.start_at_layer
 vq_arch = args.vqvae_arch
 vq_spec = args.vqvae_spec 
 pix_spec = args.pixelcnn_spec
-vq_name = vq_arch+vq_spec
+vq_name = vq_arch+'.'+vq_spec
 #get the number of codebook vectors in the vq model
 setattr(args,'input_dim',get_input_dim(device,vq_name))
 
