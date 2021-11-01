@@ -112,12 +112,8 @@ setattr(args,'input_dim',get_input_dim(device,vq_name))
 
 for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:]:
     #set and make paths 
-    data_path = os.path.join(data_root_path,layer,
-                        'vqvae{}.{}'.format(vq_arch,vq_spec),
-                        'latents')
-    pix_save_path = os.path.join(data_root_path,layer,
-                        'vqvae{}.{}'.format(vq_arch,vq_spec),
-                        'pixelcnn{}'.format(pix_spec))
+    data_path = os.path.join(data_root_path,layer,vq_name,'latents')
+    pix_save_path = os.path.join(data_root_path,layer,vq_name,'pixelcnn{}'.format(pix_spec))
     if not os.path.exists(pix_save_path):
         os.makedirs(pix_save_path)
 
