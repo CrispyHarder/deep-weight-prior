@@ -128,7 +128,7 @@ else:
 
 # Initialization
 if args.mult_init == 1 : 
-    net.mult_weights_init(args.mult_init_mode, args.mult_init_root, device=device)
+    net.mult_weights_init(args.mult_init_mode, args.mult_init_root, device=device, prior=args.mult_init_prior)
 else:
     if hasattr(net, 'weights_init'):
         net.weights_init(args.init_list, args.vae_list, pretrained=args.pretrained, filters_list=args.filters_list)

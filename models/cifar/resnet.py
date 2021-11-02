@@ -104,7 +104,7 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def mult_weights_init(self, init_mode, init_root, device):
+    def mult_weights_init(self, init_mode, init_root, device, prior=None):
         '''initialises the layers of the resnet
         Args: 
             init_mode (str): how to initialise´
@@ -136,7 +136,14 @@ class ResNet(nn.Module):
                 elif init.startswith('vqvae1'):
                     vqvae_path = short_path
                     vqvae = utils.load_vqvae1(vqvae_path,device=device)
-                    x = vqvae.sample(w.size(0) * w.size(1),device=device)
+                    if prior.startswith('pixelcnn'):
+                        pixel_path = os.path.join(short_path,prior)
+                        pixelcnn = utils.load_pixelcnn(pixel_path, device=device)
+                        prior_sample = pixelcnn.generate(batch_size=w.size(0) * w.size(1))
+                        quantized = vqvae._vq_vae._embedding(prior_sample)
+                        x = vqvae.decoder(quantized.permute(0, 3, 1, 2))
+                    else:
+                        x = vqvae.sample(w.size(0) * w.size(1),device=device)
                     sd[params] = x.reshape(w.shape)
                 elif init == 'flow':
                     #deprecated 

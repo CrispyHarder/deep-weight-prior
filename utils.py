@@ -5,6 +5,7 @@ from torch.utils.data import Dataset
 from torch.autograd import Variable
 from torchvision import transforms
 import PIL
+from models import pixelcnn
 from models.bayes import _Bayes, BayesConv2d
 from torch import distributions as dist
 import torch.nn.functional as F
@@ -443,6 +444,19 @@ def load_vqvae1(path, device=None):
     else:
         vqvae.load_state_dict(torch.load(os.path.join(path, 'vqvae_params.torch')))
     return vqvae
+
+def load_pixelcnn(path, device=None):
+    with open(os.path.join(path, 'params.yaml')) as f:
+        args = yaml.load(f)
+    
+    pix_cnn = pixelcnn.GatedPixelCNN(input_dim=args['input_dim'], dim=args['dim'],
+                n_layers=args['n_layers'])
+
+    if device:
+        pix_cnn.load_state_dict(torch.load(os.path.join(path, 'pixelcnn_params.torch'),map_location=device))
+    else:
+        pix_cnn.load_state_dict(torch.load(os.path.join(path, 'pixelcnn_params.torch')))
+    return pix_cnn
 
 def load_flow(path, device):
     with open(os.path.join(path, 'params.yaml'), 'rb') as f:
