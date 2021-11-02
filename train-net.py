@@ -68,8 +68,11 @@ parser.add_argument('--vae_list', type=str, nargs='*', default=[])
 
 #model init settings MULTI init (if used, single init is ignored)
 parser.add_argument('--mult_init', default= 1, type = int)
-parser.add_argument('--mult_init_mode', default= 'xavier', type = str)
+parser.add_argument('--mult_init_mode', default= 'xavier', type = str,
+                    help = '''such as vqvae1.3''')
 parser.add_argument('--mult_init_root', type=str, default='')
+parser.add_argument('--mult_init_prior', type=str, default='',
+                    help='''such as pixelcnn0''')
 
 #optimizer settings
 parser.add_argument('--lr', default=0.1, type=float, help='Initial learning rate')
