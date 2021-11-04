@@ -453,9 +453,9 @@ def load_pixelcnn(path, device=None):
                 n_layers=args['n_layers'])
 
     if device:
-        pix_cnn.load_state_dict(torch.load(os.path.join(path, 'pixelcnn_params.torch'),map_location=device))
+        pix_cnn.load_state_dict(torch.load(os.path.join(path, 'pixel_params.torch'),map_location=device))
     else:
-        pix_cnn.load_state_dict(torch.load(os.path.join(path, 'pixelcnn_params.torch')))
+        pix_cnn.load_state_dict(torch.load(os.path.join(path, 'pixel_params.torch')))
     return pix_cnn
 
 def load_flow(path, device):
