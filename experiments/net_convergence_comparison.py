@@ -12,9 +12,14 @@ logs_path = os.path.join('logs','exman-train-net.py','runs')
 runs = [os.path.join(logs_path,run) for run in os.listdir(logs_path) if run[:6] not in ['000001','000002']]
 
 #[('xavier'),('vae'),('he'),('vqvae1.0'),('vqvae1.0','pixelcnn0'),('vqvae1.2')]
-INIT_NAMES = [('xavier'),('vae'),('he'),('vqvae1.0'),('vqvae1.0','pixelcnn0')] 
+INIT_NAMES = [['xavier'],['vae'],['he'],['vqvae1.0'],['vqvae1.3'],['vqvae1.4']]
 METR_NAMES = ['loss','train_nll','test_nll','train_acc','test_acc']
 SAVE_PATH = os.path.join('..','..','small-results',str(date.today()),'init comparison')
+SAVE_SPEC = ''
+SAVE_PLOTS = True
+SHOW_PLOTS = False
+STARTING_AT = 0
+
 if not os.path.exists(SAVE_PATH):
     os.makedirs(SAVE_PATH)
 
@@ -35,7 +40,6 @@ for i,init in enumerate(INIT_NAMES):
             if dict['mult_init_mode'] == init[0] and dict['mult_init_prior'] == init[1]:
                 files.append(file)
 
-        
     init_data = np.genfromtxt(files[0],delimiter=',')[1:,1:6]
     for file in files[1:]:
         init_data += np.genfromtxt(file,delimiter=',')[1:,1:6]
@@ -43,10 +47,13 @@ for i,init in enumerate(INIT_NAMES):
     data.append(init_data)
 
 for i,m_name in enumerate(METR_NAMES):
+    plt.figure(i)
     for j,init in enumerate(INIT_NAMES):
-        label = init[0] + ' + ' + init[1]
-        plt.plot(data[j][:,i],label=label)
+        label = init[0] if len(init) == 1 else init[0] + ' + ' + init[1]
+        plt.plot(data[j][STARTING_AT:,i],label=label)
     plt.title('{} convergence comparison'.format(m_name))
     plt.legend(loc='lower right')
-    plt.savefig(os.path.join(SAVE_PATH,m_name))
-    plt.show()
+    if SAVE_PLOTS:    
+        plt.savefig(os.path.join(SAVE_PATH,SAVE_SPEC+m_name))
+    if SHOW_PLOTS:
+        plt.show()
