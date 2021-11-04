@@ -110,7 +110,7 @@ vq_name = vq_arch+'.'+vq_spec
 #get the number of codebook vectors in the vq model
 setattr(args,'input_dim',get_input_dim(device,vq_name))
 
-for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:]:
+for i,layer in enumerate(sorted_alphanumeric(os.listdir(data_root_path))[start_layer:]):
     #set and make paths 
     data_path = os.path.join(data_root_path,layer,vq_name,'latents')
     pix_save_path = os.path.join(data_root_path,layer,vq_name,'pixelcnn{}'.format(pix_spec))
@@ -126,11 +126,12 @@ for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:]:
     setattr(args,'data_dir',data_path)
     setattr(args, 'add_save_path',pix_save_path)
 
-    #delete attributes that arent used anymore
-    delattr(args,'data_root_path')
-    delattr(args,'start_at_layer')
-    delattr(args,'vqvae_arch')
-    delattr(args,'vqvae_spec')
-    delattr(args,'pixelcnn_spec')
+    if i == 0:
+        #delete attributes that arent used anymore
+        delattr(args,'data_root_path')
+        delattr(args,'start_at_layer')
+        delattr(args,'vqvae_arch')
+        delattr(args,'vqvae_spec')
+        delattr(args,'pixelcnn_spec')
 
     run_train_pixelcnn(args)
