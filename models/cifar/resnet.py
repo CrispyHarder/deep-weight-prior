@@ -139,8 +139,7 @@ class ResNet(nn.Module):
                     if prior.startswith('pixelcnn'):
                         pixel_path = os.path.join(short_path,prior)
                         pixelcnn = utils.load_pixelcnn(pixel_path, device=device)
-                        prior_sample = pixelcnn.generate(batch_size=w.size(0) * w.size(1))
-                        prior_sample = prior_sample.to(device)
+                        prior_sample = pixelcnn.generate(batch_size=w.size(0) * w.size(1),device=device)
                         print(prior_sample.device) #del 
                         print(vqvae.device) # del 
                         quantized = vqvae._vq_vae._embedding(prior_sample)

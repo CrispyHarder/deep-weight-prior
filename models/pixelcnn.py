@@ -134,7 +134,7 @@ class GatedPixelCNN(nn.Module):
 
         return self.output_conv(x_h)
 
-    def generate(self, shape=(8, 8), batch_size=64):
+    def generate(self, shape=(3, 3), batch_size=64, device=None):
         '''generates batch_size many images, each with shape'''
         param = next(self.parameters())
         x = torch.ones(
@@ -150,4 +150,6 @@ class GatedPixelCNN(nn.Module):
                 x.data[:, i, j].copy_(
                     probs.multinomial(1).squeeze().data
                 )
+        if device:
+            x = x.to(device)
         return x
