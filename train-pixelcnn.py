@@ -56,7 +56,7 @@ def train(trainloader, testloader, pixelcnn, optimizer, args):
             best_loss = test_loss
             torch.save(pixelcnn.state_dict(), os.path.join(args.root, 'pixelcnn_params.torch'))   
             if args.add_save_path : 
-                torch.save(pixelcnn.state_dict(), os.path.join(args.add_save_path, 'pixel_params.torch'))  
+                torch.save(pixelcnn.state_dict(), os.path.join(args.add_save_path, 'pixelcnn_params.torch'))  
    
 
     torch.save(pixelcnn.state_dict(), os.path.join(args.root, 'pixelcnn_params_lastepoch.torch'))
