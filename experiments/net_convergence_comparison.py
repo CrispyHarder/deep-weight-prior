@@ -11,15 +11,15 @@ from datetime import date
 logs_path = os.path.join('logs','exman-train-net.py','runs')
 runs = [os.path.join(logs_path,run) for run in os.listdir(logs_path) if run[:6] not in ['000001','000002']]
 
-#[('xavier'),('vae'),('he'),('vqvae1.0'),('vqvae1.0','pixelcnn0'),('vqvae1.2')]
-INIT_NAMES = [['xavier'],['vae'],['he'],['vqvae1.0'],['vqvae1.3']]
+#[['xavier'],['vae'],['he'],['vqvae1.0'],['vqvae1.3'],['vqvae1.0','pixelcnn0'],['vqvae1.3','pixelcnn0']]
+INIT_NAMES = [['vae'],['he'],['xavier'],['vqvae1.0'],['vqvae1.3'],['vqvae1.0','pixelcnn0'],['vqvae1.3','pixelcnn0']]
 METR_NAMES = ['loss','train_nll','test_nll','train_acc','test_acc']
 SAVE_PATH = os.path.join('..','..','small-results',str(date.today()),'init comparison')
-SAVE_SPEC = 'first 8'
+SAVE_SPEC = 'first10'
 SAVE_PLOTS = True
 SHOW_PLOTS = False
 STARTING_AT = 0
-ENDING_AT = 8
+ENDING_AT = 10
 
 if not os.path.exists(SAVE_PATH):
     os.makedirs(SAVE_PATH)
@@ -34,12 +34,16 @@ for i,init in enumerate(INIT_NAMES):
         yaml_p = os.path.join(run,'params.yaml')
         with open(yaml_p) as f:
             dict = yaml.load(f)
-        if len(init) == 1:
+        if not 'mult_init_prior' in dict:
             if dict['mult_init_mode'] == init[0]:
                 files.append(file)
-        elif len(init) == 2:
+        elif 'mult_init_prior' in dict and len(init) ==1:
+            if dict['mult_init_mode'] == init[0] and dict['mult_init_prior'] == '':
+                files.append(file)
+        elif 'mult_init_prior' in dict and len(init) ==2:
             if dict['mult_init_mode'] == init[0] and dict['mult_init_prior'] == init[1]:
                 files.append(file)
+                
 
     init_data = np.genfromtxt(files[0],delimiter=',')[1:,1:6]
     for file in files[1:]:
