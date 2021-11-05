@@ -12,13 +12,14 @@ logs_path = os.path.join('logs','exman-train-net.py','runs')
 runs = [os.path.join(logs_path,run) for run in os.listdir(logs_path) if run[:6] not in ['000001','000002']]
 
 #[('xavier'),('vae'),('he'),('vqvae1.0'),('vqvae1.0','pixelcnn0'),('vqvae1.2')]
-INIT_NAMES = [['xavier'],['vae'],['he'],['vqvae1.0'],['vqvae1.3'],['vqvae1.4']]
+INIT_NAMES = [['xavier'],['vae'],['he'],['vqvae1.0'],['vqvae1.3']]
 METR_NAMES = ['loss','train_nll','test_nll','train_acc','test_acc']
 SAVE_PATH = os.path.join('..','..','small-results',str(date.today()),'init comparison')
-SAVE_SPEC = ''
+SAVE_SPEC = 'first 8'
 SAVE_PLOTS = True
 SHOW_PLOTS = False
 STARTING_AT = 0
+ENDING_AT = 8
 
 if not os.path.exists(SAVE_PATH):
     os.makedirs(SAVE_PATH)
@@ -50,7 +51,7 @@ for i,m_name in enumerate(METR_NAMES):
     plt.figure(i)
     for j,init in enumerate(INIT_NAMES):
         label = init[0] if len(init) == 1 else init[0] + ' + ' + init[1]
-        plt.plot(data[j][STARTING_AT:,i],label=label)
+        plt.plot(data[j][STARTING_AT:ENDING_AT,i],label=label)
     plt.title('{} convergence comparison'.format(m_name))
     plt.legend(loc='lower right')
     if SAVE_PLOTS:    
