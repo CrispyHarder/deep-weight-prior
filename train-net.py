@@ -70,7 +70,7 @@ parser.add_argument('--vae_list', type=str, nargs='*', default=[])
 parser.add_argument('--mult_init', default= 1, type = int)
 parser.add_argument('--mult_init_mode', default= 'xavier', type = str,
                     help = '''such as vqvae1.3''')
-parser.add_argument('--mult_init_root', type=str, default='')
+parser.add_argument('--mult_init_root', type=str, default=os.path.join('data','resnet20','3x3'))
 parser.add_argument('--mult_init_prior', type=str, default='',
                     help='''such as pixelcnn0''')
 
