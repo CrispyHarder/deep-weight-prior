@@ -10,6 +10,26 @@ class Grouper(nn.Module):
     def forward(self, z, u):
         raise NotImplementedError
 
+class Simple_grouper(Grouper):
+    def __init__(self, n_caps, caps_dim, model=None, padder=None, mu_init=1.0, eps=1e-6):
+        super(Simple_grouper, self).__init__(model, padder)
+        self.correlated_mean_beta = torch.nn.Parameter(data=torch.ones(1).to('cuda')*mu_init, requires_grad=True)
+        self.eps = eps
+        self.n_caps = n_caps 
+        self.caps_dim = caps_dim
+
+    def forward(self, z, u):  
+        u = u**2.0
+        u_caps = list(u.chunk(self.n_caps,1))
+        z_caps = list(z.chunk(self.n_caps,1))
+        chi_squared = [torch.sqrt(torch.sum(cap,dim=1)+self.eps) for cap in u_caps]
+
+        for i,chi_sq in enumerate(chi_squared):
+            for j in len(z_caps[i]):
+                z_caps[i][j] =  z_caps[i][j] / chi_sq
+
+        s = torch.cat(z_caps,dim=1)
+        return s
 
 class Chi_Squared_from_Gaussian_1d(Grouper):
     def __init__(self, model, padder, trainable=False, mu_init=1.0, eps=1e-6):
