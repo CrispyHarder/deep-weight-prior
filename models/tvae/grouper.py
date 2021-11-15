@@ -27,6 +27,22 @@ class Stationary_Capsules_1d(Grouper):
         if not trainable:
             self.model.weight.requires_grad = False
 
+    def forward(self, z, u):
+        h,w = u.shape[2], u.shape[3]
+        u_caps = u.view(-1, self.n_t, self.n_caps, self.cap_dim, h*w) # (bsz, t, n_caps, capdim, h*w)
+        u_caps = u_caps.permute((0, 2, 1, 3, 4)) # (bsz, n_caps, t, capdim, h*w)
+        u_caps = u_caps.reshape(-1, 1, self.n_t, self.cap_dim, h*w)
+        u_caps = u_caps ** 2.0
+        u_caps_padded = self.padder(u_caps)
+        v = self.model(u_caps_padded).squeeze(1)
+        v = v.view(-1, self.n_caps, self.n_t, self.cap_dim, h*w)
+        v = v.permute((0, 2, 1, 3, 4)) # (bsz, t, n_caps, capdim, h*w)
+
+        v = v.reshape(z.shape)
+        std = 1.0 / torch.sqrt(v + self.eps)
+        s = (z + self.correlated_mean_beta) * std
+        return s
+
 class Chi_Squared_from_Gaussian_1d(Grouper):
     def __init__(self, model, padder, trainable=False, mu_init=1.0, eps=1e-6):
         super(Chi_Squared_from_Gaussian_1d, self).__init__(model, padder)
