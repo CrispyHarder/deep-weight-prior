@@ -102,21 +102,6 @@ class Chi_Squared_from_Gaussian_3d(Grouper):
         s = (z + self.correlated_mean_beta) * std.view(z.shape)
         return s
 
-    
-class Stationary_Capsules_1d(Grouper):
-    def __init__(self, model, padder, n_caps, cap_dim, n_transforms,
-                 mu_init=1.0, trainable=False, eps=1e-6):
-        super(Stationary_Capsules_1d, self).__init__(model, padder)
-        self.n_caps = n_caps
-        self.cap_dim = cap_dim
-        self.n_t = n_transforms
-        self.trainable = trainable
-        self.correlated_mean_beta = torch.nn.Parameter(data=torch.ones(1).to('cuda')*mu_init, requires_grad=True)
-        self.eps = eps
-
-        nn.init.ones_(self.model.weight)
-        if not trainable:
-            self.model.weight.requires_grad = False
 
     def forward(self, z, u):
         h,w = u.shape[2], u.shape[3]
