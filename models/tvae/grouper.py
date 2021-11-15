@@ -20,7 +20,7 @@ class Stationary_Capsules_1d(Grouper):
         self.cap_dim = cap_dim
         self.n_t = n_transforms
         self.trainable = trainable
-        self.correlated_mean_beta = torch.nn.Parameter(data=torch.ones(1).to('cuda')*mu_init, requires_grad=True)
+        self.correlated_mean_beta = torch.nn.Parameter(data=torch.ones(1).to(self.device)*mu_init, requires_grad=True)
         self.eps = eps
 
         nn.init.ones_(self.model.weight)
