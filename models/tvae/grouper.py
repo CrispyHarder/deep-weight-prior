@@ -11,6 +11,22 @@ class Grouper(nn.Module):
     def forward(self, z, u):
         raise NotImplementedError
 
+    
+class Stationary_Capsules_1d(Grouper):
+    def __init__(self, model, padder, n_caps, cap_dim, n_transforms,
+                 device, mu_init=1.0, trainable=False, eps=1e-6):
+        super(Stationary_Capsules_1d, self).__init__(model, padder, device)
+        self.n_caps = n_caps
+        self.cap_dim = cap_dim
+        self.n_t = n_transforms
+        self.trainable = trainable
+        self.correlated_mean_beta = torch.nn.Parameter(data=torch.ones(1).to('cuda')*mu_init, requires_grad=True)
+        self.eps = eps
+
+        nn.init.ones_(self.model.weight)
+        if not trainable:
+            self.model.weight.requires_grad = False
+
 class Chi_Squared_from_Gaussian_1d(Grouper):
     def __init__(self, model, padder, trainable=False, mu_init=1.0, eps=1e-6):
         super(Chi_Squared_from_Gaussian_1d, self).__init__(model, padder)
