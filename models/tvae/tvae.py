@@ -12,7 +12,10 @@ class TVAE(torch.nn.Module):
         self.u_encoder = u_encoder
         self.decoder = decoder
         self.grouper = grouper
-
+        
+        self.device = grouper.device
+        self.to(self.device)
+        
     def forward(self, x):
         z, kl_z, _, _ = self.z_encoder(x)
         u, kl_u, _, _ = self.u_encoder(x)
