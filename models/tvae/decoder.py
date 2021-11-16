@@ -33,11 +33,7 @@ class Gaussian_Decoder(Decoder):
         self.scale = torch.tensor([scale])
 
     def forward(self, z, x):
-        print(z.device) #del
-        print(x.device) #del
         mu_x = self.model(z)
-        print(mu_x.device) #del
-        print(self.scale.device)
         p = Normal(loc=mu_x, scale=self.scale.to(x.device))
         neg_logpx_z = -1 * p.log_prob(x)
 
