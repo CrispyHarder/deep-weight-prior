@@ -38,7 +38,7 @@ class Gaussian_Decoder(Decoder):
         mu_x = self.model(z)
         print(mu_x.device) #del
         print(self.scale.device)
-        p = Normal(loc=mu_x, scale=self.scale)
+        p = Normal(loc=mu_x, scale=self.scale.to(x.device))
         neg_logpx_z = -1 * p.log_prob(x)
 
         return mu_x, neg_logpx_z
