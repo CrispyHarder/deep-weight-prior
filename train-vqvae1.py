@@ -139,7 +139,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_embeddings', type=int, default=128)
     parser.add_argument('--ema_decay', type= float, default=0.)
     parser.add_argument('--commitment_cost', type=float, default=0.25)
-    parser.add_argument('--weight-decay', type=float, default=0.)
+    parser.add_argument('--weight_decay', type=float, default=0.)
     args = parser.parse_args()
 
     #save the args to the dict, from where the vaes are initialised
