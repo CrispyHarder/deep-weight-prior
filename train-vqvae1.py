@@ -139,6 +139,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_embeddings', type=int, default=128)
     parser.add_argument('--ema_decay', type= float, default=0.)
     parser.add_argument('--commitment_cost', type=float, default=0.25)
+    parser.add_argument('--weight-decay', type=float, default=0.)
     args = parser.parse_args()
 
     #save the args to the dict, from where the vaes are initialised
@@ -169,7 +170,7 @@ if __name__ == '__main__':
     if args.resume:
         vqvae.load_state_dict(torch.load(args.resume))
 
-    optimizer = torch.optim.Adam(vqvae.parameters(), lr=args.lr)
+    optimizer = torch.optim.Adam(vqvae.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     if args.resume_opt:
         optimizer.load_state_dict(torch.load(args.resume_opt))
         optimizer.param_groups[0]['lr'] = args.lr
