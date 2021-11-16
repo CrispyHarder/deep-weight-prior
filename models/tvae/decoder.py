@@ -28,7 +28,7 @@ class Bernoulli_Decoder(Decoder):
         return probs_x
 
 class Gaussian_Decoder(Decoder):
-    def __init__(self, model, scale=0.003):
+    def __init__(self, model, scale=1.0):
         super(Gaussian_Decoder, self).__init__(model)
         self.scale = torch.tensor([scale])
 
