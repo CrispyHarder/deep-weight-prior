@@ -35,7 +35,7 @@ class Gaussian_Decoder(Decoder):
 
     def forward(self, z, x):
         x_recon = self.model(z)
-        recon_loss = F.mse(x,x_recon)
+        recon_loss = F.mse_loss(x,x_recon)
 
         return x_recon, recon_loss
 
