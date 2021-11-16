@@ -23,54 +23,54 @@ def train(trainloader, testloader, tvae, optimizer, args):
         adjust_learning_rate(optimizer, lr_linear(epoch-1))
 
         train_KLD = utils.MovingMetric()
-        train_neg_logpx = utils.MovingMetric()
+        train_recon_loss = utils.MovingMetric()
         train_loss = utils.MovingMetric()
 
         for i, x in enumerate(trainloader):
             optimizer.zero_grad()
             x = x.to(tvae.device)
-            z, u, s, probs_x, kl_z, kl_u, neg_logpx_z = tvae(x) 
+            z, u, s, x_recon, kl_z, kl_u, recon_loss = tvae(x) 
             
             avg_KLD = (kl_z.sum() + kl_u.sum()) / x.shape[0]
-            avg_neg_logpx_z = neg_logpx_z.sum() / x.shape[0]
-            loss = avg_neg_logpx_z + avg_KLD
+            recon_loss = recon_loss.sum() / x.shape[0]
+            loss = recon_loss + avg_KLD
 
             loss.backward()
             optimizer.step()
 
             train_KLD.add(avg_KLD.item(), 1)
-            train_neg_logpx.add(avg_neg_logpx_z.item(), 1)
+            train_recon_loss.add(recon_loss.item(), 1)
             train_loss.add(loss.item(),1)
 
         test_KLD = utils.MovingMetric()
-        test_neg_logpx = utils.MovingMetric()
+        test_recon_loss = utils.MovingMetric()
         test_loss = utils.MovingMetric()
 
         for i, x in enumerate(testloader):
             x = x.to(tvae.device)
-            z, u, s, probs_x, kl_z, kl_u, neg_logpx_z = tvae(x)
+            z, u, s, x_recon, kl_z, kl_u, recon_loss = tvae(x)
            
             avg_KLD = (kl_z.sum() + kl_u.sum()) / x.shape[0]
-            avg_neg_logpx_z = neg_logpx_z.sum() / x.shape[0]
-            loss = avg_neg_logpx_z + avg_KLD
+            recon_loss = recon_loss.sum() / x.shape[0]
+            loss = recon_loss + avg_KLD
 
             test_KLD.add(avg_KLD.item(), 1)
-            test_neg_logpx.add(avg_neg_logpx_z.item(), 1)
+            test_recon_loss.add(recon_loss.item(), 1)
             test_loss.add(loss.item(),1)
         
         train_KLD = train_KLD.get_val()
-        train_neg_logpx = train_neg_logpx.get_val()
+        train_recon_loss = train_recon_loss.get_val()
         train_loss = train_loss.get_val()
         test_KLD = test_KLD.get_val()
-        test_neg_logpx = test_neg_logpx.get_val()
+        test_recon_loss = test_recon_loss.get_val()
         test_loss = test_loss.get_val()
 
         logger.add_scalar(epoch, 'train_KLD', train_KLD)
-        logger.add_scalar(epoch, 'train_neg_logpx', train_neg_logpx)
+        logger.add_scalar(epoch, 'train_recon_loss', train_recon_loss)
         logger.add_scalar(epoch, 'train_loss', train_loss)
 
         logger.add_scalar(epoch, 'test_KLD', test_KLD)
-        logger.add_scalar(epoch, 'test_neg_logpx', test_neg_logpx)
+        logger.add_scalar(epoch, 'test_recon_loss', test_recon_loss)
         logger.add_scalar(epoch, 'test_loss', test_loss)
 
         logger.iter_info()

@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 import torch.nn as nn
 from torch.distributions.bernoulli import Bernoulli
 from torch.distributions.normal import Normal
@@ -28,16 +29,15 @@ class Bernoulli_Decoder(Decoder):
         return probs_x
 
 class Gaussian_Decoder(Decoder):
-    def __init__(self, model, scale=0.003):
+    def __init__(self, model, scale=1.0):
         super(Gaussian_Decoder, self).__init__(model)
         self.scale = torch.tensor([scale])
 
     def forward(self, z, x):
-        mu_x = self.model(z)
-        p = Normal(loc=mu_x, scale=self.scale.to(x.device))
-        neg_logpx_z = -1 * p.log_prob(x)
+        x_recon = self.model(z)
+        recon_loss = F.mse(x,x_recon)
 
-        return mu_x, neg_logpx_z
+        return x_recon, recon_loss
 
     def only_decode(self, z):
         mu_x = self.model(z)

@@ -18,9 +18,9 @@ class TVAE(torch.nn.Module):
         z, kl_z, _, _ = self.z_encoder(x)
         u, kl_u, _, _ = self.u_encoder(x)
         s = self.grouper(z, u)
-        probs_x, neg_logpx_z = self.decoder(s, x)
+        x_recon, recon_loss = self.decoder(s, x)
 
-        return z, u, s, probs_x, kl_z, kl_u, neg_logpx_z
+        return z, u, s, x_recon, kl_z, kl_u, recon_loss
 
     def get_IS_estimate(self, x, n_samples=100):
         log_likelihoods = []
