@@ -27,7 +27,7 @@ class Gaussian_Encoder(Encoder):
         mu = mu_logvar[:, :s_dim]
         logvar = mu_logvar[:, s_dim:]
         std = torch.exp(logvar / 2.0)
-        print(mu, std)
+        
         q = Normal(mu, std)
         z = q.rsample() * self.post_scale
 
