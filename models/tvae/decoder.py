@@ -17,10 +17,7 @@ class Bernoulli_Decoder(Decoder):
         super(Bernoulli_Decoder, self).__init__(model)
 
     def forward(self, z, x):
-        print(z.device) #del
-        print(x.device) #del
         probs_x = torch.clamp(self.model(z), 0, 1)
-        print(probs_x.device) #del
         p = Bernoulli(probs=probs_x)
         neg_logpx_z = -1 * p.log_prob(x)
 
@@ -36,7 +33,11 @@ class Gaussian_Decoder(Decoder):
         self.scale = torch.tensor([scale])
 
     def forward(self, z, x):
+        print(z.device) #del
+        print(x.device) #del
         mu_x = self.model(z)
+        print(mu_x.device) #del
+        print(self.scale.device)
         p = Normal(loc=mu_x, scale=self.scale)
         neg_logpx_z = -1 * p.log_prob(x)
 
