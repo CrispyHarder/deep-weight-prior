@@ -434,7 +434,7 @@ def load_vae(path, device=None):
 
 def load_vqvae1(path, device=None):
     with open(os.path.join(path, 'params.yaml')) as f:
-        args = yaml.load(f)
+        args = yaml.load(f,Loader='FullLoader')
     
     if args['kernel_dim'] == 3:
         decoder = vqvae1_mod.Decoder3x3(args['z_dim'], args['hidden_dim'])
