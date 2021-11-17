@@ -41,16 +41,20 @@ parser.add_argument('--mu_init', default=30, type=int)
 parser.add_argument('--add_save_path',default='')
 parser.add_argument('--start_at_layer', type=int, default=0, help='''at which layer the 
                         vqvaes should be started to train ''')
+parser.add_argument('--end_at_layer', type=int, default=0, help='''at which layer the 
+                        vqvaes should be started to train ''')
 
 args = parser.parse_args()
 data_root_path = args.data_dir
 start_layer = args.start_at_layer
+end_layer = args.end_at_layer
 spec = args.tvae_spec 
 
 delattr(args,'start_at_layer')
+delattr(args,'end_at_layer')
 delattr(args,'tvae_spec')
 
-for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:]:
+for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:end_layer+1]:
     data_path = os.path.join(data_root_path,layer,'conv')
     tvae_save_path = os.path.join(data_root_path,layer,
                         'tvae{}'.format(spec))
