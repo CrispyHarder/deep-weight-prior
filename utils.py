@@ -410,7 +410,7 @@ def get_kernels(net):
 
 def load_vae(path, device=None):
     with open(os.path.join(path, 'params.yaml')) as f:
-        vae_args = yaml.load(f)
+        vae_args = yaml.load(f,Loader='FullLoader')
 
     if vae_args['kernel_dim'] == 3:
         decoder = vae_mod.Decoder3x3(vae_args['z_dim'], vae_args['hidden_dim'])
@@ -451,7 +451,7 @@ def load_vqvae1(path, device=None):
 
 def load_pixelcnn(path, device=None):
     with open(os.path.join(path, 'params.yaml')) as f:
-        args = yaml.load(f)
+        args = yaml.load(f,Loader='FullLoader')
     
     pix_cnn = pixelcnn.GatedPixelCNN(input_dim=args['input_dim'], dim=args['dim'],
                 n_layers=args['n_layers'])
@@ -495,7 +495,7 @@ def get_tvae(n_caps,cap_dim,mu_init,device):
 
 def load_tvae(path,device=None):
     with open(os.path.join(path, 'params.yaml')) as f:
-        args = yaml.load(f)
+        args = yaml.load(f,Loader='FullLoader')
     
     tvae = get_tvae(args['n_caps'],args['cap_dim'],args['mu_init'],device)
 
