@@ -22,6 +22,37 @@ class TVAE(torch.nn.Module):
 
         return z, u, s, x_recon, kl_z, kl_u, recon_loss
 
+    def generate(self, batch_size, device=torch.device('cpu')):
+        """
+        Samples from the latent space and return the corresponding
+        image space map.
+        :param num_samples: (Int) Number of samples
+        :param current_device: (Int) Device to run the model
+        :return: (Tensor)
+        """
+        n_caps = self.grouper.n_caps
+        cap_dim = self.grouper.cap_dim
+        s_dim = n_caps*cap_dim
+        z,u = torch.randn((batch_size, 2*s_dim, 1, 1)).to(device).chunk(2,dim=1)
+        s = self.grouper(z,u)
+        samples = self.decoder.only_decode(s)
+        return samples
+
+
+
+        # sampled_indices = torch.randint(0,self.num_embeddings,(num_samples,9))
+        # if device:
+        #     sampled_indices = sampled_indices.to(device)
+        # codebook_vecs = self._vq_vae._embedding(sampled_indices)
+        # codebook_vecs = codebook_vecs.view(-1,self.embedding_dim,3,3)
+
+        # if device:
+        #     codebook_vecs = codebook_vecs.to(device)
+
+        # samples = self.decode(codebook_vecs)
+        # return samples
+
+
     def get_IS_estimate(self, x, n_samples=100):
         log_likelihoods = []
 

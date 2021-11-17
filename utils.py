@@ -20,7 +20,11 @@ import models.vae as vae_mod
 import models.vqvae1 as vqvae1_mod 
 import models
 import pickle
-
+from models.tvae.encoder import Gaussian_Encoder
+from models.tvae.decoder import Gaussian_Decoder
+from models.tvae.models import MLP_Decoder,MLP_Encoder
+from models.tvae.grouper import Stationary_Capsules_1d
+from models.tvae.tvae import TVAE
 DATA_ROOT = os.path.join('data')# os.environ['DATA_ROOT']
 
 def kl_ffn(mu0, var0, mu1, var1):
@@ -457,6 +461,49 @@ def load_pixelcnn(path, device=None):
     else:
         pix_cnn.load_state_dict(torch.load(os.path.join(path, 'pixelcnn_params.torch')))
     return pix_cnn
+
+def get_tvae(n_caps,cap_dim,mu_init,device):
+    n_cin = 1 
+    n_hw = 3
+    group_kernel = (1, 3, 1)
+    n_transforms = 1
+    s_dim = n_caps*cap_dim
+    z_encoder = Gaussian_Encoder(MLP_Encoder(s_dim=s_dim, n_cin=n_cin, n_hw=n_hw),
+                                 loc=0.0, scale=1.0)
+
+    u_encoder = Gaussian_Encoder(MLP_Encoder(s_dim=s_dim, n_cin=n_cin, n_hw=n_hw),                                
+                                    loc=0.0, scale=1.0)
+
+    decoder = Gaussian_Decoder(MLP_Decoder(s_dim=s_dim, n_cout=n_cin, n_hw=n_hw))
+
+    grouper = Stationary_Capsules_1d(
+                        nn.ConvTranspose3d(in_channels=1, out_channels=1,
+                                            kernel_size=group_kernel, 
+                                            padding=(2*(group_kernel[0] // 2), 
+                                                    2*(group_kernel[1] // 2),
+                                                    2*(group_kernel[2] // 2)),
+                                            stride=(1,1,1), padding_mode='zeros', bias=False),
+                        lambda x: F.pad(x, (group_kernel[2] // 2, group_kernel[2] // 2,
+                                            group_kernel[1] // 2, group_kernel[1] // 2,
+                                            group_kernel[0] // 2, group_kernel[0] // 2), 
+                                            mode='circular'),
+                    n_caps=n_caps, cap_dim=cap_dim, n_transforms=n_transforms,
+                    mu_init=mu_init, device=device)
+
+    tvae = TVAE(z_encoder, u_encoder, decoder, grouper)
+    return tvae
+
+def load_tvae(path,device=None):
+    with open(os.path.join(path, 'params.yaml')) as f:
+        args = yaml.load(f)
+    
+    tvae = get_tvae(args['n_caps'],args['cap_dim'],args['mu_init'],device)
+
+    if device:
+        tvae.load_state_dict(torch.load(os.path.join(path, 'tvae_params.torch'),map_location=device))
+    else:
+        tvae.load_state_dict(torch.load(os.path.join(path, 'tvae_params.torch')))
+    return tvae
 
 def load_flow(path, device):
     with open(os.path.join(path, 'params.yaml'), 'rb') as f:
