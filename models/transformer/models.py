@@ -9,6 +9,7 @@ __author__ = "Yu-Hsiang Huang"
 
 
 def get_pad_mask(seq, pad_idx):
+    '''in order to pad the padding_idx in the language sequences'''
     return (seq != pad_idx).unsqueeze(-2)
 
 
