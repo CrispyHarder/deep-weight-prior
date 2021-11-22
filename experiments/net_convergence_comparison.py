@@ -12,14 +12,14 @@ logs_path = os.path.join('logs','exman-train-net.py','runs')
 runs = [os.path.join(logs_path,run) for run in os.listdir(logs_path) if run[:6] not in ['000001','000002']]
 
 #[['xavier'],['vae'],['he'],['vqvae1.0'],['vqvae1.3'],['vqvae1.0','pixelcnn0'],['vqvae1.3','pixelcnn0']]
-INIT_NAMES = [['vae'],['he'],['xavier'],['vqvae1.0'],['vqvae1.3'],['vqvae1.0','pixelcnn0'],['vqvae1.3','pixelcnn0']]
+INIT_NAMES = [['vae'],['he'],['xavier'],['vqvae1.5','pixelcnn0'],['vqvae1.6','pixelcnn0'],['vqvae1.0','pixelcnn0'],['vqvae1.3','pixelcnn0'],['tvae0']]
 METR_NAMES = ['loss','train_nll','test_nll','train_acc','test_acc']
 SAVE_PATH = os.path.join('..','..','small-results',str(date.today()),'init comparison')
-SAVE_SPEC = 'first10'
+SAVE_SPEC = 'last 20'
 SAVE_PLOTS = True
 SHOW_PLOTS = False
-STARTING_AT = 0
-ENDING_AT = 10
+STARTING_AT = 100
+ENDING_AT = 121
 
 if not os.path.exists(SAVE_PATH):
     os.makedirs(SAVE_PATH)
@@ -44,7 +44,7 @@ for i,init in enumerate(INIT_NAMES):
             if dict['mult_init_mode'] == init[0] and dict['mult_init_prior'] == init[1]:
                 files.append(file)
                 
-
+    print(init,len(files))
     init_data = np.genfromtxt(files[0],delimiter=',')[1:,1:6]
     for file in files[1:]:
         init_data += np.genfromtxt(file,delimiter=',')[1:,1:6]
