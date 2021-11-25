@@ -144,7 +144,6 @@ if __name__ == '__main__':
         testloader, D = utils.get_dataloader(args.test, args.test_bs, shuffle=False)
 
     dims = [int(el) for el in args.dims]
-    print(dims)
     lvae = LVAE(dims,args.z_dim,device)
     
     #configure optimisation
