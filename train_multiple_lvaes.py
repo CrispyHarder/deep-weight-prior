@@ -37,7 +37,7 @@ parser.add_argument('--z_dim', default=2, type=int)
 parser.add_argument('--add_save_path',default='')
 parser.add_argument('--start_at_layer', type=int, default=0, help='''at which layer the 
                         vqvaes should be started to train ''')
-parser.add_argument('--end_at_layer', type=int, default=0, help='''at which layer the 
+parser.add_argument('--end_at_layer', type=int, default=18, help='''at which layer the 
                         vqvaes should be started to train ''')
 
 args = parser.parse_args()
