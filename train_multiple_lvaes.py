@@ -6,7 +6,12 @@ from my_utils import sorted_alphanumeric
 def run_train_lvae(args):
     string = 'python train-lvae.py'
     for arg in vars(args):
-        string += ' --'+str(arg)+' '+str(getattr(args,arg))
+        if isinstance(getattr(args,arg),list):
+            string += ' --'+str(arg)+' '
+            for el in getattr(args,arg):
+                string += str(el) + ' '
+        else:
+            string += ' --'+str(arg)+' '+str(getattr(args,arg))
     os.system(string)
 
 parser = argparse.ArgumentParser()
