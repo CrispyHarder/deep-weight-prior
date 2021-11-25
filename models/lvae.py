@@ -41,6 +41,9 @@ class LVAE(nn.Module):
         self.to(device)
 
     def forward(self,x):
+        bs = x.size(0)
+        x = x.view(bs,9)
+
         hidden = self.encoder(x)
         mu = self.mu(hidden)
         var = F.softplus(self.var(hidden))
