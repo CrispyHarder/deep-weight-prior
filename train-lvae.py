@@ -142,8 +142,9 @@ if __name__ == '__main__':
     else:
         trainloader, D = utils.get_dataloader(args.train, args.batch_size, shuffle=True)
         testloader, D = utils.get_dataloader(args.test, args.test_bs, shuffle=False)
-    
-    lvae = LVAE(args.dims,args.z_dim,device)
+        
+    dims = [float(el) for el in args.dims]
+    lvae = LVAE(dims,args.z_dim,device)
     
     #configure optimisation
     optimizer = torch.optim.Adam(lvae.parameters(), lr=args.lr, weight_decay=args.weight_decay) 
