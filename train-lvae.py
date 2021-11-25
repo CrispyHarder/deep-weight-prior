@@ -109,9 +109,6 @@ if __name__ == '__main__':
     #optimisation
     parser.add_argument('--weight_decay', type=float, default=0.)
     parser.add_argument('--lr', default=1e-4, type=float)
-    parser.add_argument('--sgd_momentum',type=float, default=0.9)
-    parser.add_argument('--lr_decay_step', default=int(11e8), type=int)
-    parser.add_argument('--lr_decay', default=0.5, type=float)
     
     #evaluation
     parser.add_argument('--eval_freq', default=1, type=int)
