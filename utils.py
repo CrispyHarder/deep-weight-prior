@@ -510,8 +510,8 @@ def load_lvae(path, device=None):
     with open(os.path.join(path, 'params.yaml')) as f:
         args = yaml.full_load(f)
     
-    print(args['dims'],type(args['dims']),args['dims'][0],type(args['dims'][0]))
-    lvae = LVAE(dim_list=args['dims'],z_dim=args['z_dim'],device=device)
+    dim_list = [int(dim) for dim in args['dims']]
+    lvae = LVAE(dim_list=dim_list,z_dim=args['z_dim'],device=device)
 
     if device:
         lvae.load_state_dict(torch.load(os.path.join(path, 'lvae_params.torch'),map_location=device))
