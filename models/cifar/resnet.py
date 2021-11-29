@@ -150,6 +150,11 @@ class ResNet(nn.Module):
                     tvae = utils.load_tvae(tvae_path,device=device)
                     x = tvae.generate(batch_size=w.size(0) * w.size(1),device=device)
                     sd[params] = x.reshape(w.shape)
+                elif init.startswith('lvae'):
+                    lvae_path = short_path
+                    lvae = utils.load_lvae(lvae_path,device=device)
+                    x = lvae.generate(batch_size=w.size(0) * w.size(1),device=device)
+                    sd[params] = x.reshape(w.shape)
                 elif init == 'flow':
                     #deprecated 
                     flow_path = short_path

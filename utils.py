@@ -25,6 +25,7 @@ from models.tvae.decoder import Gaussian_Decoder
 from models.tvae.models import MLP_Decoder,MLP_Encoder
 from models.tvae.grouper import Stationary_Capsules_1d
 from models.tvae.tvae import TVAE
+from models.lvae import LVAE
 DATA_ROOT = os.path.join('data')# os.environ['DATA_ROOT']
 
 def kl_ffn(mu0, var0, mu1, var1):
@@ -504,6 +505,18 @@ def load_tvae(path,device=None):
     else:
         tvae.load_state_dict(torch.load(os.path.join(path, 'tvae_params.torch')))
     return tvae
+
+def load_lvae(path, device=None):
+    with open(os.path.join(path, 'params.yaml')) as f:
+        args = yaml.full_load(f)
+    
+    lvae = LVAE(dim_list=args['dims'],z_dim=args['z_dim'],device=device)
+
+    if device:
+        lvae.load_state_dict(torch.load(os.path.join(path, 'lvae_params.torch'),map_location=device))
+    else:
+        lvae.load_state_dict(torch.load(os.path.join(path, 'lvae_params.torch')))
+    return lvae
 
 def load_flow(path, device):
     with open(os.path.join(path, 'params.yaml'), 'rb') as f:
