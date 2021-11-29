@@ -510,7 +510,7 @@ def load_lvae(path, device=None):
     with open(os.path.join(path, 'params.yaml')) as f:
         args = yaml.full_load(f)
     
-    print(args['dims'],type(args['dims'],args['dims'][0],type(args['dims'][0])))
+    print(args['dims'],type(args['dims']),args['dims'][0],type(args['dims'][0]))
     lvae = LVAE(dim_list=args['dims'],z_dim=args['z_dim'],device=device)
 
     if device:
