@@ -57,10 +57,12 @@ class LVAE(nn.Module):
         recon_loss = F.mse_loss(x,x_recon)
         return x_recon, recon_loss, kl_loss
 
-    def generate(self, batch_size):
-        prior_samples = torch.randn(batch_size,self.z_dim).to(self.device)
+    def generate(self, batch_size, device=None):
+        prior_samples = torch.randn(batch_size,self.z_dim).to(device)
         constructions = self.decoder(prior_samples)
         constructions = constructions.view(batch_size,1,3,3)
+        if device:
+            constructions = constructions.to(device)
         return constructions
         
 
