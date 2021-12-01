@@ -25,7 +25,7 @@ class LVAE(nn.Module):
         self.encoder = []
         for i in range(len(self.dim_list)-1):
             self.encoder.append(nn.Linear(self.dim_list[i],self.dim_list[i+1]))
-            self.encoder.append(nn.ReLU()) 
+            self.encoder.append(nn.ELU()) 
         self.encoder = nn.Sequential(*self.encoder)
 
         self.mu = nn.Linear(self.dim_list[-1],z_dim)
@@ -34,7 +34,8 @@ class LVAE(nn.Module):
         self.decoder = []
         for i in range(len(self.dim_list_rev)-1):
             self.decoder.append(nn.Linear(self.dim_list_rev[i],self.dim_list_rev[i+1]))
-            self.decoder.append(nn.ReLU())
+            if not i + 1 == (len(self.dim_list_rev)-1):
+                self.decoder.append(nn.ELU())
         self.decoder = nn.Sequential(*self.decoder)
 
         self.apply(_weights_init)
