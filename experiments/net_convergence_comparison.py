@@ -12,12 +12,12 @@ logs_path = os.path.join('logs','exman-train-net.py','runs')
 runs = [os.path.join(logs_path,run) for run in os.listdir(logs_path) if run[:6] not in ['000001','000002']]
 
 #[['xavier'],['vae'],['he'],['vqvae1.0'],['vqvae1.3'],['vqvae1.0','pixelcnn0'],['vqvae1.3','pixelcnn0']]
-INIT_NAMES = [['vae'],['he'],['xavier'],['vqvae1.5','pixelcnn0'],['vqvae1.6','pixelcnn0'],['vqvae1.0','pixelcnn0'],['vqvae1.3','pixelcnn0'],['tvae0']]
+INIT_NAMES = [['vae'],['he'],['xavier'],['vqvae1.5','pixelcnn0'],['vqvae1.6','pixelcnn0'],['vqvae1.0','pixelcnn0'],['vqvae1.3','pixelcnn0'],['tvae0'],['lvae0']]
 METR_NAMES = ['loss','train_nll','test_nll','train_acc','test_acc']
 SAVE_PATH = os.path.join('..','..','small-results',str(date.today()),'init comparison')
 SAVE_SPEC = 'last 20'
 SAVE_PLOTS = True
-SHOW_PLOTS = False
+SHOW_PLOTS = True
 STARTING_AT = 100
 ENDING_AT = 121
 
