@@ -451,37 +451,6 @@ def load_vqvae1(path, device=None):
         vqvae.load_state_dict(torch.load(os.path.join(path, 'vqvae_params.torch')))
     return vqvae
 
-def load_ghn_noise(path, device=None):
-
-    from models.ghn.nn import GHN2
-    from models.ghn.decoder import ConvDecoder
-
-    with open(os.path.join(path, 'params.yaml')) as f:
-        args = yaml.full_load(f)
-
-    ghn = GHN2('cifar10')
-    hid = ghn.hid
-    var_init = args['var_init']
-    mu_scale = args['mu_scale']
-    var_scale = args['var_scale']
-    train_noise = args['train_noise']
-    
-    ghn.decoder = ConvDecoder(in_features=hid,
-                        hid=(hid * 4, hid * 8),
-                        out_shape=(64,64,3,3),
-                        num_classes=10,
-                        gen_noise = True,
-                        var_init = var_init,
-                        mu_scale  = mu_scale,
-                        var_scale = var_scale,
-                        train_noise= train_noise)
-
-    if device:
-        ghn.load_state_dict(torch.load(os.path.join(path, 'ghn_params.torch'),map_location=device))
-    else:
-        ghn.load_state_dict(torch.load(os.path.join(path, 'ghn_params.torch')))
-    return ghn
-
 def load_pixelcnn(path, device=None):
     with open(os.path.join(path, 'params.yaml')) as f:
         args = yaml.full_load(f)
