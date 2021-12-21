@@ -17,11 +17,11 @@ from .mlp import MLP
 from .gatedgnn import GatedGNN
 from .decoder import MLPDecoder, ConvDecoder
 from .layers import ShapeEncoder
-from ..deepnets1m.ops import NormLayers, PosEnc
-from ..deepnets1m.genotypes import PRIMITIVES_DEEPNETS1M
-from ..deepnets1m.net import named_layered_modules
-from ..deepnets1m.graph import Graph, GraphBatch
-from ..utils import capacity, default_device
+from .ops import NormLayers, PosEnc
+from .genotypes import PRIMITIVES_DEEPNETS1M
+from .net import named_layered_modules
+from .graph import Graph, GraphBatch
+from .utils import capacity, default_device
 import time
 
 
@@ -44,7 +44,7 @@ def GHN2(dataset='imagenet', device=default_device()):
     :return: GHN-2 with trained weights
     """
     path = os.path.dirname(os.path.abspath(__file__))
-    return GHN.load(os.path.join(path, '../../checkpoints/ghn2_%s.pt' % dataset),device=device)
+    return GHN.load(os.path.join(path, '../../data/ghn2_%s.pt' % dataset),device=device)
 
 
 def ghn_parallel(ghn):
