@@ -114,6 +114,14 @@ class ResNet(nn.Module):
         #  we dont have to do anything
         if init_mode == 'he':
             return
+
+        if init_mode.startswith('ghn'):
+            path = os.path.join('data','resnet20','global_init_models',init_mode)
+            if init_mode == 'ghn_noise':
+                ghn = utils.load_ghn_noise(path,device=device)
+            ghn(self)
+            return
+
         self.apply(utils.weight_init(module=nn.Conv2d, initf=nn.init.xavier_normal_))
         self.apply(utils.weight_init(module=nn.Linear, initf=nn.init.xavier_normal_))
 
