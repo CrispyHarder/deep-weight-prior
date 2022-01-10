@@ -82,6 +82,29 @@ if args.sim == 'pred':
             pred_sim = torch.sum(all_predictions[i] == all_predictions[j])/length_data
             matrix[i,j] = matrix[j,i] = pred_sim
 
+if args.sim == 'logits':
+    CosineSimilarity = torch.nn.CosineSimilarity(dim=0)
+    all_predictions = []
+    for model_path in model_paths:
+        if init == 'vae':
+            model = utils.load_vae(model_path,device)
+
+        predictions = []
+        for x,_ in testloader:
+            x = x.to(device)
+            p = model(x)
+            predictions.append(torch.flatten(p))
+        predictions = torch.cat(predictions)
+        all_predictions.append(predictions)
+    all_predictions = torch.stack(all_predictions)
+
+    length_data = all_predictions.shape[1]
+    matrix = torch.zeros(length_data,length_data)
+    for i in range(length_data):
+        for j in range(i+1):
+            cos_sim = CosineSimilarity(all_predictions[i],all_predictions[j])
+            matrix[i,j] = matrix[j,i] = cos_sim
+
 title = f'{args.sim} Similarity of {args.init} inits'
 save_path = os.path.join(SAVE_PATH,title)
 plot_matrix_as_heatmap(matrix,title=title,save_path=save_path)
