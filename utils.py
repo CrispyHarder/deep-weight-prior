@@ -16,7 +16,6 @@ import pickle
 from sklearn.model_selection import train_test_split
 from scipy.special import logsumexp
 import yaml
-from models.ghn.nn import GHN
 import models.vae as vae_mod
 import models.vqvae1 as vqvae1_mod 
 import models
