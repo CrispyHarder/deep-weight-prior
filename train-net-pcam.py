@@ -149,21 +149,12 @@ for e in range(1, args.epochs + 1):
         p = net(x)
 
         data_term = F.cross_entropy(p, y)
-        l2_norm = torch.FloatTensor([0.]).to(device)
-        if args.l2 != 0:
-            l2_norm = torch.sum(torch.stack([torch.sum(p**2) for p in net.features.parameters()]))
 
-        dwp_reg = 0.
-        if args.dwp_reg != 0.:
-            dwp_reg = net.get_dwp_reg(backward=True, n_tries=args.dwp_samples, weight=args.dwp_reg)
-
-        loss = data_term + args.l2 * l2_norm
+        loss = data_term
 
         loss.backward()
 
         opt.step()
-
-        loss += args.dwp_reg * dwp_reg
 
         acc = torch.sum(p.max(1)[1] == y)
         train_acc.add(acc.item(), p.size(0))
