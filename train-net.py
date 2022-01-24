@@ -282,7 +282,7 @@ for e in range(1, args.epochs + 1):
    
         t0 = time.time()
 
-torch.save(net.state_dict(), os.path.join(args.root, 'vae_params_lastepoch.torch'))
+torch.save(net.state_dict(), os.path.join(args.root, 'net_params_lastepoch.torch'))
 torch.save(opt.state_dict(), os.path.join(args.root, 'opt_params_lastepoch.torch'))
 
 writer.flush()
