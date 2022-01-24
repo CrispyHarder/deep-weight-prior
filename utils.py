@@ -307,7 +307,7 @@ def load_dataset(data, train_bs, test_bs, num_examples=None, augmentation=True, 
             # transforms.RandomRotation(45),         
             # transforms.RandomResizedCrop(32,scale=(0.8,1.0),ratio=(1.0,1.0)),
             transforms.ToTensor()])
-        val_transf = transforms.Compose([transforms.ToTensor()])
+        val_transf = transforms.Compose([transforms.CenterCrop(32), transforms.ToTensor()])
         train_ts.transform=tr_transf
         val_ts.transform=val_transf
         trainset = train_ts
