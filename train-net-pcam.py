@@ -17,7 +17,7 @@ def adjust_learning_rate(optimizer, lr):
 
 
 def lr_linear(epoch):
-    lr = args.lr * np.minimum((args.decrease_from - epoch) * 1. / (args.epochs - args.decrease_from) + 1, 1.)
+    lr = args.lr * np.minimum((0 - epoch) * 1. / (args.epochs - 0) + 1, 1.)
     return max(0, lr)
 
 
@@ -35,30 +35,15 @@ def predict(data, net):
 parser = myexman.ExParser(file=__file__)
 #general settings
 parser.add_argument('--name', default='')
-parser.add_argument('--data', default='cifar')
 parser.add_argument('--gpu_id', default='0')
 parser.add_argument('--data_split_seed', default=456, type=int)
 parser.add_argument('--seed', default=5743, type=int)
-parser.add_argument('--resume', default='')
-parser.add_argument('--epochs', default=120, type=int, help='Number of epochs')
+parser.add_argument('--epochs', default=15, type=int, help='Number of epochs')
 parser.add_argument('--bs', default=128, type=int, help='Batch size')
 parser.add_argument('--test_bs', default=500, type=int, help='Batch size for test dataloader')
 
 #model settings
-parser.add_argument('--model', default='resnet20')
-parser.add_argument('--model_size', default=1., type=float)
-parser.add_argument('--net_cfg', default='E')
-parser.add_argument('--hid_dim', default=[32, 64], type=int, nargs='+')
 parser.add_argument('--n_classes', default=2, type=int)
-parser.add_argument('--do', default=[], type=float, nargs='*')
-
-#model init settings SINGLE init
-parser.add_argument('--pretrained', default='')
-parser.add_argument('--filters_list', default=[], nargs='*', type=str)
-parser.add_argument('--init', default='xavier')
-parser.add_argument('--init_list', type=str, nargs='*', default=[])
-parser.add_argument('--vae', default='')
-parser.add_argument('--vae_list', type=str, nargs='*', default=[])
 
 #model init settings MULTI init (if used, single init is ignored)
 parser.add_argument('--mult_init', default= 1, type = int)
@@ -74,17 +59,6 @@ parser.add_argument('--weight_decay', default=1e-4, type=float)
 parser.add_argument('--momentum', default=0.9, type=float)
 parser.add_argument('--milestones', type=int, nargs='*', default=[10,12])
 parser.add_argument('--gammas', default=[0.5,0.2], nargs='*', type=float)
-parser.add_argument('--decrease_from', default=0, type=int) #unused 
-
-# loss function settings 
-parser.add_argument('--l2', default=0., type=float)
-parser.add_argument('--dwp_reg', default=0., type=float)
-
-#evaluation and leftovers
-parser.add_argument('--eval_freq', default=1, type=int)
-parser.add_argument('--dwp_samples', default=1, type=int)
-parser.add_argument('--rfe', default=0, type=int)
-parser.add_argument('--fastconv', default=0, type=int)
 
 
 args = parser.parse_args()
