@@ -103,10 +103,6 @@ it = 0
 writer = SummaryWriter(args.root)
 best_acc = 0.
 for e in range(1, args.epochs + 1):
-    if args.milestones:
-        lrscheduler.step()
-    else:
-        adjust_learning_rate(opt, lr_linear(e - 1))
     net.train()
     train_acc = utils.MovingMetric()
     train_nll = utils.MovingMetric()
@@ -135,38 +131,43 @@ for e in range(1, args.epochs + 1):
         train_loss.add(loss.item() * x.size(0), x.size(0))
 
 
-    if True:
-        net.eval()
+    
+    net.eval()
 
-        logp_test, labels = predict(testloader, net)
-        test_acc = np.mean(logp_test.argmax(1) == labels)
-        test_nll = -logp_test[np.arange(len(labels)), labels].mean()
+    logp_test, labels = predict(testloader, net)
+    test_acc = np.mean(logp_test.argmax(1) == labels)
+    test_nll = -logp_test[np.arange(len(labels)), labels].mean()
 
-        logger.add_scalar(e, 'loss', train_loss.get_val())
-        logger.add_scalar(e, 'train_nll', train_nll.get_val())
-        logger.add_scalar(e, 'test_nll', test_nll)
-        logger.add_scalar(e, 'train_acc', train_acc.get_val())
-        logger.add_scalar(e, 'test_acc', test_acc)
-        logger.add_scalar(e, 'lr', opt.param_groups[0]['lr'])
-        logger.add_scalar(e, 'sec', time.time() - t0)
+    logger.add_scalar(e, 'loss', train_loss.get_val())
+    logger.add_scalar(e, 'train_nll', train_nll.get_val())
+    logger.add_scalar(e, 'test_nll', test_nll)
+    logger.add_scalar(e, 'train_acc', train_acc.get_val())
+    logger.add_scalar(e, 'test_acc', test_acc)
+    logger.add_scalar(e, 'lr', opt.param_groups[0]['lr'])
+    logger.add_scalar(e, 'sec', time.time() - t0)
 
-        logger.iter_info()
-        logger.save()
+    logger.iter_info()
+    logger.save()
 
-        writer.add_scalar( 'train/loss', train_loss.get_val(),e)
-        writer.add_scalar( 'train/nll', train_nll.get_val(),e)
-        writer.add_scalar( 'test/nll', test_nll,e)
-        writer.add_scalar( 'train/acc', train_acc.get_val(),e)
-        writer.add_scalar( 'test/acc', test_acc,e)
-        writer.add_scalar( 'lr', opt.param_groups[0]['lr'],e)
-        writer.add_scalar( 'sec', time.time() - t0,e)
-        
-        is_best = best_acc < test_acc
-        if is_best:
-            best_acc = test_acc
-            torch.save(net.state_dict(), os.path.join(args.root, 'net_params.torch'))     
-   
-        t0 = time.time()
+    writer.add_scalar( 'train/loss', train_loss.get_val(),e)
+    writer.add_scalar( 'train/nll', train_nll.get_val(),e)
+    writer.add_scalar( 'test/nll', test_nll,e)
+    writer.add_scalar( 'train/acc', train_acc.get_val(),e)
+    writer.add_scalar( 'test/acc', test_acc,e)
+    writer.add_scalar( 'lr', opt.param_groups[0]['lr'],e)
+    writer.add_scalar( 'sec', time.time() - t0,e)
+    
+    is_best = best_acc < test_acc
+    if is_best:
+        best_acc = test_acc
+        torch.save(net.state_dict(), os.path.join(args.root, 'net_params.torch'))     
+
+    t0 = time.time()
+
+    if args.milestones:
+        lrscheduler.step()
+    else:
+        adjust_learning_rate(opt, lr_linear(e))
 
 torch.save(net.state_dict(), os.path.join(args.root, 'net_params_lastepoch.torch'))
 torch.save(opt.state_dict(), os.path.join(args.root, 'opt_params_lastepoch.torch'))
