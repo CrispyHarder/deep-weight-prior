@@ -289,7 +289,7 @@ def load_dataset(data, train_bs, test_bs, num_examples=None, augmentation=True, 
                                           train_size=num_examples, random_state=42)
             trainset.train_data = a
             trainset.train_labels = b
-    if data == 'pcam':
+    elif data == 'pcam':
         # get general data, is not splitted or transformed yet
         data_dir = os.path.join(DATA_ROOT,'pcam')
         data_transformer = transforms.Compose([transforms.ToTensor()])
