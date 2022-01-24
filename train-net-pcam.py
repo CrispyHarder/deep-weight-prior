@@ -133,10 +133,10 @@ for e in range(1, args.epochs + 1):
 
     
     net.eval()
-
-    logp_test, labels = predict(testloader, net)
-    test_acc = np.mean(logp_test.argmax(1) == labels)
-    test_nll = -logp_test[np.arange(len(labels)), labels].mean()
+    with torch.no_grad():
+        logp_test, labels = predict(testloader, net)
+        test_acc = np.mean(logp_test.argmax(1) == labels)
+        test_nll = -logp_test[np.arange(len(labels)), labels].mean()
 
     logger.add_scalar(e, 'loss', train_loss.get_val())
     logger.add_scalar(e, 'train_nll', train_nll.get_val())
