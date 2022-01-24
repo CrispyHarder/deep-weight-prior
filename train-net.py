@@ -42,7 +42,6 @@ parser = myexman.ExParser(file=__file__)
 parser.add_argument('--name', default='')
 parser.add_argument('--data', default='cifar')
 parser.add_argument('--gpu_id', default='0')
-parser.add_argument('--num_examples', default=None, type=int)
 parser.add_argument('--data_split_seed', default=456, type=int)
 parser.add_argument('--seed', default=5743, type=int)
 parser.add_argument('--resume', default='')
@@ -91,7 +90,6 @@ parser.add_argument('--eval_freq', default=1, type=int)
 parser.add_argument('--dwp_samples', default=1, type=int)
 parser.add_argument('--rfe', default=0, type=int)
 parser.add_argument('--fastconv', default=0, type=int)
-parser.add_argument('--aug', default=0, type=int)
 
 
 args = parser.parse_args()
@@ -111,8 +109,8 @@ logger = Logger('logs', base=args.root, fmt=fmt)
 
 # Load Datasets
 trainloader, testloader = utils.load_dataset(data=args.data, train_bs=args.bs, test_bs=args.test_bs,
-                                             num_examples=args.num_examples, seed=args.data_split_seed,
-                                             augmentation=(args.aug == 1))
+                                             num_examples=None, seed=args.data_split_seed,
+                                             augmentation=False)
 
 if args.model == 'fconv':
     net = FConvMNIST(args.net_cfg, device=device, hid_dim=args.hid_dim, do=args.do)
