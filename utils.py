@@ -301,6 +301,7 @@ def load_dataset(data, train_bs, test_bs, num_examples=None, augmentation=True, 
         train_ts,val_ts=random_split(img_dataset,[len_train,len_val], generator=torch.Generator().manual_seed(seed)) # random split 80/20
         # set the transformations 
         tr_transf = transforms.Compose([
+            transforms.CenterCrop(32),
             transforms.RandomHorizontalFlip(p=0.5), 
             transforms.RandomVerticalFlip(p=0.5),  
             transforms.RandomRotation(45),         
