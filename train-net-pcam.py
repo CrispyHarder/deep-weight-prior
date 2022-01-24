@@ -46,8 +46,7 @@ parser.add_argument('--test_bs', default=500, type=int, help='Batch size for tes
 parser.add_argument('--n_classes', default=2, type=int)
 
 #model init settings MULTI init (if used, single init is ignored)
-parser.add_argument('--mult_init', default= 1, type = int)
-parser.add_argument('--mult_init_mode', default= 'xavier', type = str,
+parser.add_argument('--mult_init_mode', default= 'he', type = str,
                     help = '''such as vqvae1.3''')
 parser.add_argument('--mult_init_root', type=str, default=os.path.join('data','resnet20','3x3'))
 parser.add_argument('--mult_init_prior', type=str, default='',
