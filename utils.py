@@ -250,7 +250,12 @@ class Pcam_dataset(Dataset):
         cdm_data=os.path.join(data_dir,data_type)  # directory of files
         file_names = os.listdir(cdm_data) # get list of images in that directory
         self.full_filenames = [os.path.join(cdm_data, f) for f in file_names]   # get the full path to images
-        
+        self.images = []
+        for name in self.full_filenames:
+            image = Image.open(name)
+            image = transform(image)
+            self.images.append(image)
+        self.images = torch.stack(self.images)
         # Get Labels
         labels_data=os.path.join(data_dir,"train_labels.csv") # labels are in a csv file named train_labels.csv
         labels_df=pd.read_csv(labels_data)
@@ -263,8 +268,7 @@ class Pcam_dataset(Dataset):
       
     def __getitem__(self, idx):
         # open image, apply transforms and return with label
-        image = Image.open(self.full_filenames[idx])  # Open Image with PIL
-        image = self.transform(image) # Apply Specific Transformation to Image
+        image = self.images[idx]
         return image, self.labels[idx]
 
 
