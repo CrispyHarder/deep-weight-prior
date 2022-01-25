@@ -36,7 +36,6 @@ parser = myexman.ExParser(file=__file__)
 #general settings
 parser.add_argument('--name', default='')
 parser.add_argument('--gpu_id', default='0')
-parser.add_argument('--data_split_seed', default=456, type=int)
 parser.add_argument('--seed', default=5743, type=int)
 parser.add_argument('--epochs', default=15, type=int, help='Number of epochs')
 parser.add_argument('--bs', default=128, type=int, help='Batch size')
@@ -77,7 +76,7 @@ logger = Logger('logs', base=args.root, fmt=fmt)
 
 # Load Datasets
 trainloader, testloader = utils.load_dataset(data='pcam', train_bs=args.bs, test_bs=args.test_bs,
-                                             num_examples=None, seed=args.data_split_seed,
+                                             num_examples=None, seed=42,
                                              augmentation=False)
 
 net = ResNet([3,3,3],num_classes=args.n_classes).to(device)
