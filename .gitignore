@@ -10,6 +10,7 @@
 *_private.py
 *_private.txt
 *_private.png
+*_private.tif
 
 #pylint file 
 .pylintrc
