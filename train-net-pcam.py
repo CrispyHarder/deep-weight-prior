@@ -163,10 +163,9 @@ for e in range(1, args.epochs + 1):
 
     t0 = time.time()
 
-    if args.milestones:
-        lrscheduler.step()
-    else:
-        adjust_learning_rate(opt, lr_linear(e))
+
+    lrscheduler.step()
+
 
 torch.save(net.state_dict(), os.path.join(args.root, 'net_params_lastepoch.torch'))
 torch.save(opt.state_dict(), os.path.join(args.root, 'opt_params_lastepoch.torch'))
