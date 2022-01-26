@@ -55,8 +55,8 @@ parser.add_argument('--mult_init_prior', type=str, default='',
 parser.add_argument('--lr', default=0.1, type=float, help='Initial learning rate')
 parser.add_argument('--weight_decay', default=1e-4, type=float)
 parser.add_argument('--momentum', default=0.9, type=float)
-parser.add_argument('--milestones', type=int, nargs='*', default=[10,12])
-parser.add_argument('--gammas', default=[0.5,0.2], nargs='*', type=float)
+parser.add_argument('--milestones', type=int, nargs='*', default=[1000000])
+parser.add_argument('--gammas', default=[1.], nargs='*', type=float)
 
 
 args = parser.parse_args()
