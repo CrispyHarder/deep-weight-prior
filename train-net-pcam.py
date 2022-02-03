@@ -98,7 +98,7 @@ fmt = {
 logger = Logger('logs', base=args.root, fmt=fmt)
 
 # Load Datasets
-trainloader, valloader, testloader = utils.load_pcam_loaders(args.train_bs, args.test_bs)
+trainloader, valloader, testloader = utils.load_pcam_loaders(args.bs, args.test_bs)
 
 net = ResNet([3,3,3],num_classes=args.n_classes).to(device)
 
