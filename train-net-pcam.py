@@ -11,16 +11,6 @@ from torch.nn import functional as F
 from torch.utils.tensorboard import SummaryWriter
 from my_utils import MultistepMultiGammaLR
 
-def adjust_learning_rate(optimizer, lr):
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
-
-
-def lr_linear(epoch):
-    lr = args.lr * np.minimum((0 - epoch) * 1. / (args.epochs - 0) + 1, 1.)
-    return max(0, lr)
-
-
 def predict(data, net):
     pred = []
     l = []
@@ -31,6 +21,39 @@ def predict(data, net):
         pred.append(p.data.cpu().numpy())
     return np.concatenate(pred), np.concatenate(l)
 
+def eval_step(it,net,data,logger,writer,args,opt,train_acc,train_nll,lrscheduler):
+    global t0
+    global best_acc
+
+    net.eval()
+    with torch.no_grad():
+        logp_val, labels = predict(data, net)
+        val_acc = np.mean(logp_val.argmax(1) == labels)
+        val_nll = -logp_val[np.arange(len(labels)), labels].mean()
+
+    logger.add_scalar(it, 'train_nll', train_nll.get_val())
+    logger.add_scalar(it, 'train_acc', train_acc.get_val())
+    logger.add_scalar(it, 'val_nll', val_nll)
+    logger.add_scalar(it, 'val_acc', val_acc)
+    logger.add_scalar(it, 'lr', opt.param_groups[0]['lr'])
+    logger.add_scalar(it, 'sec', time.time() - t0)
+    logger.iter_info()
+    logger.save()
+
+    writer.add_scalar( 'train/nll', train_nll.get_val(),it)
+    writer.add_scalar( 'val/nll', val_nll,it)
+    writer.add_scalar( 'train/acc', train_acc.get_val(),it)
+    writer.add_scalar( 'val/acc', val_acc,it)
+    writer.add_scalar( 'lr', opt.param_groups[0]['lr'],it)
+    writer.add_scalar( 'sec', time.time() - t0,it)
+    
+    is_best = best_acc < val_acc
+    if is_best:
+        best_acc = val_acc
+        torch.save(net.state_dict(), os.path.join(args.root, 'net_params.torch'))     
+
+    t0 = time.time()
+    lrscheduler.step()
 
 parser = myexman.ExParser(file=__file__)
 #general settings
@@ -75,9 +98,7 @@ fmt = {
 logger = Logger('logs', base=args.root, fmt=fmt)
 
 # Load Datasets
-trainloader, testloader = utils.load_dataset(data='pcam', train_bs=args.bs, test_bs=args.test_bs,
-                                             num_examples=None, seed=42,
-                                             augmentation=False)
+trainloader, valloader, testloader = utils.load_pcam_loaders(args.train_bs, args.test_bs)
 
 net = ResNet([3,3,3],num_classes=args.n_classes).to(device)
 
@@ -93,7 +114,6 @@ lrscheduler = MultistepMultiGammaLR(opt, milestones=args.milestones,
                                     gamma=args.gammas)
 
 
-N = len(trainloader.dataset)
 t0 = time.time()
 
 it = 0
@@ -105,8 +125,6 @@ for e in range(1, args.epochs + 1):
     net.train()
     train_acc = utils.MovingMetric()
     train_nll = utils.MovingMetric()
-    train_loss = utils.MovingMetric()
-    opt.zero_grad()
 
     for x, y in trainloader:
         opt.zero_grad()
@@ -116,55 +134,21 @@ for e in range(1, args.epochs + 1):
 
         p = net(x)
 
-        data_term = F.cross_entropy(p, y)
+        nll = F.cross_entropy(p, y)
 
-        loss = data_term
-
-        loss.backward()
+        nll.backward()
 
         opt.step()
 
         acc = torch.sum(p.max(1)[1] == y)
         train_acc.add(acc.item(), p.size(0))
-        train_nll.add(data_term.item() * x.size(0), x.size(0))
-        train_loss.add(loss.item() * x.size(0), x.size(0))
+        train_nll.add(nll.item() * x.size(0), x.size(0))
 
-
-    
-    net.eval()
-    with torch.no_grad():
-        logp_test, labels = predict(testloader, net)
-        test_acc = np.mean(logp_test.argmax(1) == labels)
-        test_nll = -logp_test[np.arange(len(labels)), labels].mean()
-
-    logger.add_scalar(e, 'loss', train_loss.get_val())
-    logger.add_scalar(e, 'train_nll', train_nll.get_val())
-    logger.add_scalar(e, 'test_nll', test_nll)
-    logger.add_scalar(e, 'train_acc', train_acc.get_val())
-    logger.add_scalar(e, 'test_acc', test_acc)
-    logger.add_scalar(e, 'lr', opt.param_groups[0]['lr'])
-    logger.add_scalar(e, 'sec', time.time() - t0)
-
-    logger.iter_info()
-    logger.save()
-
-    writer.add_scalar( 'train/loss', train_loss.get_val(),e)
-    writer.add_scalar( 'train/nll', train_nll.get_val(),e)
-    writer.add_scalar( 'test/nll', test_nll,e)
-    writer.add_scalar( 'train/acc', train_acc.get_val(),e)
-    writer.add_scalar( 'test/acc', test_acc,e)
-    writer.add_scalar( 'lr', opt.param_groups[0]['lr'],e)
-    writer.add_scalar( 'sec', time.time() - t0,e)
-    
-    is_best = best_acc < test_acc
-    if is_best:
-        best_acc = test_acc
-        torch.save(net.state_dict(), os.path.join(args.root, 'net_params.torch'))     
-
-    t0 = time.time()
-
-
-    lrscheduler.step()
+        if it % 500 == 0:
+            eval_step(it,net,valloader,logger,writer,args,opt,train_acc,train_nll,lrscheduler)
+            net.train() #after eval set net to train an reset the moving metrices
+            train_acc = utils.MovingMetric()
+            train_nll = utils.MovingMetric()
 
 
 torch.save(net.state_dict(), os.path.join(args.root, 'net_params_lastepoch.torch'))

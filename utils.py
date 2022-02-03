@@ -271,6 +271,26 @@ class Pcam_dataset(Dataset):
         image = self.images[idx]
         return image, self.labels[idx]
 
+def load_pcam_loaders(train_bs,test_bs):
+    # get general data, is not splitted or transformed yet
+    data_dir = os.path.join(DATA_ROOT,'pcam')
+    data_transformer = transforms.Compose([transforms.ToTensor()])
+    img_dataset = Pcam_dataset(data_dir,data_transformer,'train')
+    #now split the data; we have 220025 images 
+    len_train = 160000
+    len_val = 22000
+    len_test = 38025
+    train_ts, val_ts ,test_ts=random_split(img_dataset,[len_train,len_val, len_test], generator=torch.Generator().manual_seed(42)) 
+    # set the transformations 
+    transf = transforms.Compose([transforms.ToTensor()])
+    train_ts.transform=transf
+    val_ts.transform=transf
+    test_ts.transform = transf
+
+    trainloader = torch.utils.data.DataLoader(train_ts, batch_size=train_bs, shuffle=True, num_workers=0)
+    valloader = torch.utils.data.DataLoader(val_ts, batch_size=test_bs, shuffle=False, num_workers=0)
+    testloader = torch.utils.data.DataLoader(test_ts, batch_size=test_bs, shuffle=False, num_workers=0)
+    return trainloader,valloader,testloader
 
 def load_dataset(data, train_bs, test_bs, num_examples=None, augmentation=True, data_root=DATA_ROOT,
                  shuffle=True, seed=42):
@@ -294,24 +314,7 @@ def load_dataset(data, train_bs, test_bs, num_examples=None, augmentation=True, 
             trainset.train_data = a
             trainset.train_labels = b
     elif data == 'pcam':
-        # get general data, is not splitted or transformed yet
-        data_dir = os.path.join(DATA_ROOT,'pcam')
-        data_transformer = transforms.Compose([transforms.ToTensor()])
-        img_dataset = Pcam_dataset(data_dir,data_transformer,'train')
-        #now split the data
-        len_img=len(img_dataset)
-        len_train=int(0.8*len_img)
-        len_val=len_img-len_train
-        train_ts,val_ts=random_split(img_dataset,[len_train,len_val], generator=torch.Generator().manual_seed(42)) # random split 80/20
-        # set the transformations 
-        tr_transf = transforms.Compose([
-            transforms.ToTensor()
-            ])
-        val_transf = transforms.Compose([transforms.ToTensor()])
-        train_ts.transform=tr_transf
-        val_ts.transform=val_transf
-        trainset = train_ts
-        testset = val_ts
+        raise RuntimeError
     elif data == 'cifar100':
         trainset = torchvision.datasets.CIFAR100(root=data_root, train=True, download=True,
                                                  transform=transform_train if augmentation else transform_test)
