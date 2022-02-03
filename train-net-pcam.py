@@ -21,7 +21,7 @@ def predict(data, net):
         pred.append(p.data.cpu().numpy())
     return np.concatenate(pred), np.concatenate(l)
 
-def eval_step(it,net,data,logger,writer,args,opt,train_acc,train_nll,lrscheduler):
+def eval_step(it,net,data,logger,writer,args,opt,train_acc,train_nll,lrscheduler,step=True):
     global t0
     global best_acc
 
@@ -53,7 +53,8 @@ def eval_step(it,net,data,logger,writer,args,opt,train_acc,train_nll,lrscheduler
         torch.save(net.state_dict(), os.path.join(args.root, 'net_params.torch'))     
 
     t0 = time.time()
-    lrscheduler.step()
+    if step:
+        lrscheduler.step()
 
 parser = myexman.ExParser(file=__file__)
 #general settings
@@ -121,6 +122,12 @@ it = 0
 #add a tensorboard writer
 writer = SummaryWriter(args.root)
 best_acc = 0.
+
+#for init eval 
+train_acc = utils.MovingMetric()
+train_nll = utils.MovingMetric()
+eval_step(it,net,valloader,logger,writer,args,opt,train_acc,train_nll,lrscheduler,step=False)
+
 for e in range(1, args.epochs + 1):
     net.train()
     train_acc = utils.MovingMetric()
@@ -144,7 +151,7 @@ for e in range(1, args.epochs + 1):
         train_acc.add(acc.item(), p.size(0))
         train_nll.add(nll.item() * x.size(0), x.size(0))
 
-        if it % 500 == 0:
+        if it % 300 == 0:
             eval_step(it,net,valloader,logger,writer,args,opt,train_acc,train_nll,lrscheduler)
             net.train() #after eval set net to train an reset the moving metrices
             train_acc = utils.MovingMetric()

@@ -277,9 +277,9 @@ def load_pcam_loaders(train_bs,test_bs):
     data_transformer = transforms.Compose([transforms.ToTensor()])
     img_dataset = Pcam_dataset(data_dir,data_transformer,'train')
     #now split the data; we have 220025 images 
-    len_train = 160000
-    len_val = 22000
-    len_test = 38025
+    len_train = 153600
+    len_val = 25000
+    len_test = 41425
     train_ts, val_ts ,test_ts=random_split(img_dataset,[len_train,len_val, len_test], generator=torch.Generator().manual_seed(42)) 
     # set the transformations 
     transf = transforms.Compose([transforms.ToTensor()])
