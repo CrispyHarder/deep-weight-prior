@@ -1,4 +1,3 @@
-import shutil
 import torch 
 from models.cifar import resnet
 import yaml
@@ -7,6 +6,7 @@ import re
 import warnings
 from collections import Counter
 from torch.optim.lr_scheduler import _LRScheduler
+import numpy as np 
 
 
 class MultistepMultiGammaLR(_LRScheduler):
@@ -95,3 +95,43 @@ def sorted_alphanumeric(data):
     convert = lambda text: int(text) if text.isdigit() else text.lower()
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
     return sorted(data, key=alphanum_key)
+
+def brier_multi(targets, probs):
+    '''Takes in a 2 dim tensor of one hot targets and probability scores and 
+    computes the Brier score'''
+    return np.mean(np.sum((probs - targets)**2, axis=1))
+
+class Ensemble():
+    def __init__(self,init,n_members,device):
+        self.device = device
+        self.members = []
+        self.find_models(init,n_members)
+        self.n_members = n_members
+    
+    def predict(self,x):
+        x = x.to(self.device)
+        logits = 0.
+        for member in self.members:
+            logits += member(x)
+        return logits/self.n_members
+
+    def find_models(self,init,n_members):
+        found_members = 0
+        path = os.path.join('logs','exman-train-net.py','runs')
+        for run in os.listdir(path)[2:]:
+            yaml_p = os.path.join(path,run,'params.yaml')
+            with open(yaml_p) as f:
+                dict = yaml.full_load(f)
+            if dict['mult_init_mode'] == init:
+                found_members += 1 
+                model = resnet.resnet20()
+                try:
+                    model.load_state_dict(torch.load(os.path.join(path,run, 'vae_params_lastepoch.torch'),map_location=self.device))
+                except:
+                    model.load_state_dict(torch.load(os.path.join(path,run, 'net_params_lastepoch.torch'),map_location=self.device))
+                self.members.append(model)
+                if found_members == n_members:
+                    return
+        raise RuntimeError
+
+
