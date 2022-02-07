@@ -243,6 +243,26 @@ def get_dataloaders(file, train_bs, test_bs, train_size=0.8):
 
     return trainloader, testloader, D
 
+class CifarC_dataset(Dataset):
+    def __init__(self,level) :
+        super().__init__()
+        ds_path = os.path.join('data','CIFAR-10-C',f'level_{level}')
+        images_path = os.path.join(ds_path,'images.npy')
+        labels_path = os.path.join(ds_path,'labels.npy')
+        self.images = np.load(images_path)
+        self.labels = np.load(labels_path)
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, idx):
+        return self.images[idx], self.labels[idx]
+
+def load_cifar_c_loader(level):
+    dataset = CifarC_dataset(level)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=500, shuffle=False, num_workers=0)
+    return dataloader
+    
 class Pcam_dataset(Dataset):
     def __init__(self, data_dir, transform,data_type="train"):      
     
@@ -315,73 +335,6 @@ def load_dataset(data, train_bs, test_bs, num_examples=None, augmentation=True, 
             trainset.train_labels = b
     elif data == 'pcam':
         raise RuntimeError
-    elif data == 'cifar100':
-        trainset = torchvision.datasets.CIFAR100(root=data_root, train=True, download=True,
-                                                 transform=transform_train if augmentation else transform_test)
-        testset = torchvision.datasets.CIFAR100(root=data_root, train=False, download=True, transform=transform_test)
-        if num_examples is not None and num_examples != len(trainset):
-            a, _, b, _ = train_test_split(trainset.train_data, trainset.train_labels,
-                                          train_size=num_examples, random_state=42)
-            trainset.train_data = a
-            trainset.train_labels = b
-    elif data == 'svhn':
-        trainset = torchvision.datasets.SVHN(root=data_root, split='train', download=True,
-                                             transform=transform_train if augmentation else transform_test)
-        testset = torchvision.datasets.SVHN(root=data_root, split='test', download=True, transform=transform_test)
-        if num_examples is not None and num_examples != len(trainset):
-            a, _, b, _ = train_test_split(trainset.data, trainset.labels,
-                                          train_size=num_examples, random_state=42)
-            trainset.data = a
-            trainset.labels = b
-    elif data == 'mnist':
-        trainset = torchvision.datasets.MNIST(root=data_root, train=True, download=True, transform=transform_test)
-        testset = torchvision.datasets.MNIST(root=data_root, train=False, download=True, transform=transform_test)
-
-        if num_examples is not None and num_examples != len(trainset):
-            idxs, _ = train_test_split(np.arange(len(trainset)), train_size=num_examples, random_state=seed,
-                                       stratify=tonp(trainset.train_labels))
-            trainset.train_data = trainset.train_data[idxs]
-            trainset.train_labels = trainset.train_labels[idxs]
-    elif data == 'cifar5':
-        CIFAR5_CLASSES = [0, 1, 2, 3, 4]
-        trainset = CIFAR(root=data_root, train=True, download=True,
-                         transform=transform_train if augmentation else transform_test, classes=CIFAR5_CLASSES,
-                         random_labeling=False)
-        testset = CIFAR(root=data_root, train=False, download=True, transform=transform_test, classes=CIFAR5_CLASSES,
-                        random_labeling=False)
-    elif data == 'not-mnist':
-        trainset = torchvision.datasets.MNIST(root=os.path.join(data_root, 'not-mnist'), train=True,
-                                              download=True, transform=transform_test)
-        testset = torchvision.datasets.MNIST(root=os.path.join(data_root, 'not-mnist'), train=False,
-                                             download=True, transform=transform_test)
-        if num_examples is not None and num_examples != len(trainset):
-            idxs, _ = train_test_split(np.arange(len(trainset)), train_size=num_examples, random_state=seed,
-                                       stratify=tonp(trainset.train_labels))
-            trainset.train_data = trainset.train_data[idxs]
-            trainset.train_labels = trainset.train_labels[idxs]
-    elif data == 'cifar5-rest':
-        CIFAR5_CLASSES = [5, 6, 7, 8, 9]
-        trainset = CIFAR(root=data_root, train=True, download=True,
-                         transform=transform_train if augmentation else transform_test, classes=CIFAR5_CLASSES)
-        testset = CIFAR(root=data_root, train=False, download=True, transform=transform_test, classes=CIFAR5_CLASSES)
-    elif data == 'shapes':
-        train_images = np.load(os.path.join(data_root, 'four-shapes/dataset/train_images.npy'))
-        test_images = np.load(os.path.join(data_root, 'four-shapes/dataset/test_images.npy'))
-        train_labels = np.load(os.path.join(data_root, 'four-shapes/dataset/train_labels.npy'))
-        test_labels = np.load(os.path.join(data_root, 'four-shapes/dataset/test_labels.npy'))
-
-        if num_examples != 4000:
-            RuntimeWarning('==> --num-examples for shapes dataset should be 4000 <==')
-
-        if num_examples is not None:
-            train_images, _, train_labels, _ = train_test_split(train_images, train_labels, train_size=num_examples,
-                                                                random_state=seed, stratify=train_labels)
-
-        train_images, test_images = map(torch.Tensor, [train_images, test_images])
-        train_labels, test_labels = map(torch.LongTensor, [train_labels, test_labels])
-
-        trainset = torch.utils.data.TensorDataset(train_images, train_labels)
-        testset = torch.utils.data.TensorDataset(test_images, test_labels)
     else:
         raise NotImplementedError
 
