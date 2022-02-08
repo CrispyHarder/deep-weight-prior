@@ -52,8 +52,12 @@ ensemble = Ensemble(args.init,args.n_members,device)
 
 # get predictions and labels 
 logits, probs, labels = predict(testloader,ensemble)
+print(logits[:2])
+print(probs[:2])
+print(labels[:2])
 #get array of actualy predictions from the logits
 predictions = logits.max(1)[1] 
+print(predictions[:2])
 # get the confidences of each prediction = percentage of prediction
 confidences = [probs[i,int(predictions[i])] for i in range(len(logits))] 
 
