@@ -55,7 +55,7 @@ logits, probs, labels = predict(testloader,ensemble)
 #get array of actualy predictions from the logits
 predictions = logits.max(1)[1] 
 # get the confidences of each prediction = percentage of prediction
-confidences = [probs[i,predictions[i]] for i in range(len(logits))] 
+confidences = [probs[i,int(predictions[i])] for i in range(len(logits))] 
 
 accuracy = np.sum(labels == predictions)
 ece = expected_calibration_error(confidences,predictions,labels)
@@ -77,7 +77,7 @@ results = {
 }
 
 save_dir = os.path.join('logs','ensemble results',args.data)
-save_path = os.path.join(save_dir,f'{args.init} {args.n_members} {corr_lvl}')
+save_path = os.path.join(save_dir,f'{args.init} {args.n_members} {args.corr_lvl}')
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
