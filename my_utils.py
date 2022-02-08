@@ -100,9 +100,16 @@ def sorted_alphanumeric(data):
     return sorted(data, key=alphanum_key)
 
 def brier_multi(targets, probs):
-    '''Takes in a 2 dim tensor of one hot targets and probability scores and 
+    '''Takes in a 1 dim tensor of targets and a 2-dim vector of probability scores and 
     computes the Brier score'''
+    targets = to_one_hot(targets)
     return np.mean(np.sum((probs - targets)**2, axis=1))
+
+def to_one_hot (labels,num_classes=10):
+    n = np.shape(labels)[0]
+    one_hot = np.zeros((n,num_classes))
+    one_hot[np.arange(n),labels] = 1 
+    return one_hot
 
 class Ensemble():
     def __init__(self,init,n_members,device):

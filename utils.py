@@ -312,7 +312,7 @@ def load_pcam_loaders(train_bs,test_bs):
     testloader = torch.utils.data.DataLoader(test_ts, batch_size=test_bs, shuffle=False, num_workers=0)
     return trainloader,valloader,testloader
 
-def load_dataset(data, train_bs, test_bs, num_examples=None, augmentation=True, data_root=DATA_ROOT,
+def load_dataset(data, train_bs, test_bs, num_examples=None, augmentation=False, data_root=DATA_ROOT,
                  shuffle=True, seed=42):
     transform_train = transforms.Compose([
         MyPad(4),
@@ -326,7 +326,7 @@ def load_dataset(data, train_bs, test_bs, num_examples=None, augmentation=True, 
     ])
     if data == 'cifar':
         trainset = torchvision.datasets.CIFAR10(root=data_root, train=True, download=True,
-                                                transform=transform_train if augmentation else transform_test)
+                                                transform=transform_test)
         testset = torchvision.datasets.CIFAR10(root=data_root, train=False, download=True, transform=transform_test)
         if num_examples is not None and num_examples != len(trainset):
             a, _, b, _ = train_test_split(trainset.train_data, trainset.train_labels,
