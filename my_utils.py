@@ -121,8 +121,9 @@ class Ensemble():
     def predict(self,x):
         x = x.to(self.device)
         logits = 0.
-        for member in self.members:
-            logits += member(x)
+        with torch.no_grad():
+            for member in self.members:
+                logits += member(x)
         return logits/self.n_members
 
     def find_models(self,init,n_members):
@@ -140,6 +141,7 @@ class Ensemble():
                 except:
                     model.load_state_dict(torch.load(os.path.join(path,run, 'net_params_lastepoch.torch'),map_location=self.device))
                 model = model.to(self.device)
+                model.eval()
                 self.members.append(model)
                 if found_members == n_members:
                     return

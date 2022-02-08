@@ -30,7 +30,7 @@ def eval_run(testloader,ensemble,corr_lvl,args):
 
     accuracy = np.sum(labels == predictions)
     ece = expected_calibration_error(confidences,predictions,labels)
-    nll = F.cross_entropy(logits, labels)
+    nll = F.cross_entropy(torch.from_numpy(logits), torch.from_numpy(labels))
     brier = brier_multi(labels,probs)
 
     #prepare dict to save results
