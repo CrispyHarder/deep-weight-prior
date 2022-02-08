@@ -23,15 +23,17 @@ def predict(data, net):
 
 #Argument parser
 parser = argparse.ArgumentParser()
-parser.add_argument('--data',choices=['cifar10,cifarC,pcam'])
+parser.add_argument('--data',choices=['cifar10','cifarC','pcam'])
 parser.add_argument('--corr_lvl',type=int,
                     help='''If the dataset  is cifarC, this is the corruption level,
-                    otherwise this argument is not used''',choices=[1,2,3,4,5])
+                    otherwise this argument is not used''',choices=[0,1,2,3,4,5],default=0)
 parser.add_argument('--init',choices=['vae','ghn_base','ghn_noise'])
 parser.add_argument('--n_members',choices=[5,10])
 parser.add_argument('--gpu_id',choices=[0,1,2,3,4,5,6,7])
 args = parser.parse_args()
 
+assert ((args.corr_lvl == 0 and not args.data == 'cifarC') or
+        (not args.corr_lvl == 0 and args.data == 'cifarC'))
 #set device
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
 use_cuda = torch.cuda.is_available()
@@ -61,10 +63,9 @@ nll = F.cross_entropy(logits, labels)
 brier = brier_multi(labels,probs)
 
 #prepare dict to save results
-corr_lvl = 0 if not args.data == 'cifarC' else args.corr_lvl
 results = {
     'dataset': args.data,
-    'corr_lvl':corr_lvl,
+    'corr_lvl':args.corr_lvl,
     'init': args.init,
     'n_members': args.n_members,
     'scores':{
