@@ -139,6 +139,7 @@ class Ensemble():
                     model.load_state_dict(torch.load(os.path.join(path,run, 'vae_params_lastepoch.torch'),map_location=self.device))
                 except:
                     model.load_state_dict(torch.load(os.path.join(path,run, 'net_params_lastepoch.torch'),map_location=self.device))
+                model = model.to(self.device)
                 self.members.append(model)
                 if found_members == n_members:
                     return
