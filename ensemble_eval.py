@@ -65,8 +65,6 @@ parser.add_argument('--n_members',type=int,choices=[5,10])
 parser.add_argument('--gpu_id',type=int,choices=[0,1,2,3,4,5,6,7])
 args = parser.parse_args()
 
-assert ((args.corr_lvl == 0 and not args.data == 'cifarC') or
-        (not args.corr_lvl == 0 and args.data == 'cifarC'))
 #set device
 os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_id)
 use_cuda = torch.cuda.is_available()
