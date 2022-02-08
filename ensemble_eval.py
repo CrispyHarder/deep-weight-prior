@@ -28,8 +28,8 @@ parser.add_argument('--corr_lvl',type=int,
                     help='''If the dataset  is cifarC, this is the corruption level,
                     otherwise this argument is not used''',choices=[0,1,2,3,4,5],default=0)
 parser.add_argument('--init',choices=['vae','ghn_base','ghn_noise'])
-parser.add_argument('--n_members',choices=[5,10])
-parser.add_argument('--gpu_id',choices=[0,1,2,3,4,5,6,7])
+parser.add_argument('--n_members',type=int,choices=[5,10])
+parser.add_argument('--gpu_id',type=int,choices=[0,1,2,3,4,5,6,7])
 args = parser.parse_args()
 
 assert ((args.corr_lvl == 0 and not args.data == 'cifarC') or
