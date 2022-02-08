@@ -14,7 +14,7 @@ def predict(data, net):
     for x, y in data:
         l.append(y.numpy())
         x = x.to(device)
-        p = net(x)
+        p = net.predict(x)
         sp = F.softmax(p, dim=1)
         pred.append(p.data.cpu().numpy())
         prob.append(sp.data.cpu().numpy())
