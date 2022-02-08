@@ -20,13 +20,46 @@ def predict(data, net):
         prob.append(sp.data.cpu().numpy())
     return np.concatenate(pred), np.concatenate(prob), np.concatenate(l)
 
+def eval_run(testloader,ensemble,corr_lvl,args):
+    # get predictions and labels 
+    logits, probs, labels = predict(testloader,ensemble)
+    #get array of actualy predictions from the logits
+    predictions = np.argmax(probs,axis=1)
+    # get the confidences of each prediction = percentage of prediction
+    confidences = [probs[i,int(predictions[i])] for i in range(len(logits))] 
+
+    accuracy = np.sum(labels == predictions)
+    ece = expected_calibration_error(confidences,predictions,labels)
+    nll = F.cross_entropy(logits, labels)
+    brier = brier_multi(labels,probs)
+
+    #prepare dict to save results
+    results = {
+        'dataset': args.data,
+        'corr_lvl':corr_lvl,
+        'init': args.init,
+        'n_members': args.n_members,
+        'scores':{
+            'accuracy':accuracy,
+            'ece':ece,
+            'nll':nll,
+            'brier':brier
+        }
+    }
+    
+    print(results)
+
+    save_dir = os.path.join('logs','ensemble results',args.data)
+    save_path = os.path.join(save_dir,f'{args.init} {args.n_members} {args.corr_lvl}')
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    with open(save_dir, 'w') as fp:
+        json.dump(results, fp)
 
 #Argument parser
 parser = argparse.ArgumentParser()
 parser.add_argument('--data',choices=['cifar10','cifarC','pcam'])
-parser.add_argument('--corr_lvl',type=int,
-                    help='''If the dataset  is cifarC, this is the corruption level,
-                    otherwise this argument is not used''',choices=[0,1,2,3,4,5],default=0)
 parser.add_argument('--init',choices=['vae','ghn_base','ghn_noise'])
 parser.add_argument('--n_members',type=int,choices=[5,10])
 parser.add_argument('--gpu_id',type=int,choices=[0,1,2,3,4,5,6,7])
@@ -39,53 +72,22 @@ os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_id)
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-#get dataloader
-if args.data == 'cifar10':
-    _,testloader = load_dataset('cifar',500,500)
-elif args.data == 'pcam':
-    _,_,testloader = load_pcam_loaders(500,500)
-elif args.data == 'cifarC':
-    testloader = load_cifar_c_loader(args.corr_lvl)
-
 #get ensemble 
 ensemble = Ensemble(args.init,args.n_members,device)
 
-# get predictions and labels 
-logits, probs, labels = predict(testloader,ensemble)
-print(logits[:2])
-print(probs[:2])
-print(labels[:2])
-#get array of actualy predictions from the logits
-predictions = logits.max(1)[1] 
-print(predictions[:2])
-# get the confidences of each prediction = percentage of prediction
-confidences = [probs[i,int(predictions[i])] for i in range(len(logits))] 
+#get dataloader and make run 
+if args.data == 'cifar10':
+    _,testloader = load_dataset('cifar',500,500)
+    eval_run(testloader,ensemble,0,args)
+elif args.data == 'pcam':
+    _,_,testloader = load_pcam_loaders(500,500)
+    eval_run(testloader,ensemble,0,args)
+elif args.data == 'cifarC':
+    for corr_level in [1,2,3,4,5]:
+        testloader = load_cifar_c_loader(corr_level)
+        eval_run(testloader,ensemble,corr_level,args)
 
-accuracy = np.sum(labels == predictions)
-ece = expected_calibration_error(confidences,predictions,labels)
-nll = F.cross_entropy(logits, labels)
-brier = brier_multi(labels,probs)
 
-#prepare dict to save results
-results = {
-    'dataset': args.data,
-    'corr_lvl':args.corr_lvl,
-    'init': args.init,
-    'n_members': args.n_members,
-    'scores':{
-        'accuracy':accuracy,
-        'ece':ece,
-        'nll':nll,
-        'brier':brier
-    }
-}
 
-save_dir = os.path.join('logs','ensemble results',args.data)
-save_path = os.path.join(save_dir,f'{args.init} {args.n_members} {args.corr_lvl}')
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
-
-with open(save_dir, 'w') as fp:
-    json.dump(results, fp)
 
 
