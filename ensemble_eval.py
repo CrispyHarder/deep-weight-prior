@@ -28,10 +28,10 @@ def eval_run(testloader,ensemble,corr_lvl,args):
     # get the confidences of each prediction = percentage of prediction
     confidences = [probs[i,int(predictions[i])] for i in range(len(logits))] 
 
-    accuracy = np.sum(labels == predictions)
+    accuracy = np.sum(labels == predictions)/len(labels)
     ece = expected_calibration_error(confidences,predictions,labels)
-    nll = F.cross_entropy(torch.from_numpy(logits), torch.from_numpy(labels))
-    brier = brier_multi(labels,probs)
+    nll = float(F.cross_entropy(torch.from_numpy(logits), torch.from_numpy(labels)))
+    brier = float(brier_multi(labels,probs))
 
     #prepare dict to save results
     results = {
