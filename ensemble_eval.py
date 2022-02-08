@@ -59,7 +59,7 @@ def eval_run(testloader,ensemble,corr_lvl,args):
 
 #Argument parser
 parser = argparse.ArgumentParser()
-parser.add_argument('--data',choices=['cifar10','cifarC','pcam'])
+parser.add_argument('--data',choices=['cifar10','cifarC'])
 parser.add_argument('--init',choices=['vae','ghn_base','ghn_noise'])
 parser.add_argument('--n_members',type=int,choices=[5,10])
 parser.add_argument('--gpu_id',type=int,choices=[0,1,2,3,4,5,6,7])
@@ -76,9 +76,6 @@ ensemble = Ensemble(args.init,args.n_members,device)
 #get dataloader and make run 
 if args.data == 'cifar10':
     _,testloader = load_dataset('cifar',500,500)
-    eval_run(testloader,ensemble,0,args)
-elif args.data == 'pcam':
-    _,_,testloader = load_pcam_loaders(500,500)
     eval_run(testloader,ensemble,0,args)
 elif args.data == 'cifarC':
     for corr_level in [1,2,3,4,5]:
