@@ -35,7 +35,7 @@ args = parser.parse_args()
 assert ((args.corr_lvl == 0 and not args.data == 'cifarC') or
         (not args.corr_lvl == 0 and args.data == 'cifarC'))
 #set device
-os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_id
+os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_id)
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
