@@ -76,6 +76,15 @@ def get_state_dict_from_checkpoint(checkpoint_path, map_location=None):
         checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
     return checkpoint['state_dict']
 
+def load_statedict(path, map_location=None):
+    if map_location:
+        state_dict = torch.load(path, map_location=map_location)
+    elif torch.cuda.is_available():
+        state_dict = torch.load(path)
+    else:
+        state_dict = torch.load(path, map_location=torch.device('cpu'))
+    return state_dict 
+
 def load_resnet_from_checkpoint(checkpoint_path, model_type, dataset_name):
     '''Gets a path to a checkpoint and a model type and loads the model 
     using the state dict'''
