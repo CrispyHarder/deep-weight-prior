@@ -251,8 +251,6 @@ class CifarC_dataset(Dataset):
         labels_path = os.path.join(ds_path,'labels.npy')
         self.images = np.load(images_path).astype(np.single)
         self.labels = np.load(labels_path).astype(np.single)
-        self.images = torch.from_numpy(self.images)
-        self.labels = torch.from_numpy(self.labels)
         self.transf = transforms.Compose([transforms.ToTensor()])
         self.images = self.transf(self.images)
         self.labels = self.transf(self.labels)
