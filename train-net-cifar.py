@@ -21,13 +21,13 @@ def predict(data, net):
         pred.append(p.data.cpu().numpy())
     return np.concatenate(pred), np.concatenate(l)
 
-def eval_step(e,net,data,logger,writer,args,opt,train_acc,train_nll,lrscheduler,step=True):
+def eval_step(e,net,valloader,logger,writer,args,opt,train_acc,train_nll,lrscheduler,step=True):
     global t0
     global best_acc
 
     net.eval()
     with torch.no_grad():
-        logp_val, labels = predict(data, net)
+        logp_val, labels = predict(valloader, net)
         val_acc = np.mean(logp_val.argmax(1) == labels)
         val_nll = -logp_val[np.arange(len(labels)), labels].mean()
 
@@ -66,7 +66,7 @@ parser.add_argument('--bs', default=128, type=int, help='Batch size')
 parser.add_argument('--test_bs', default=500, type=int, help='Batch size for test dataloader')
 
 #model init settings MULTI init (if used, single init is ignored)
-parser.add_argument('--mult_init_mode', default= 'xavier', type = str,
+parser.add_argument('--mult_init_mode', default= 'he', type = str,
                     help = '''such as vqvae1.3''')
 parser.add_argument('--mult_init_root', type=str, default=os.path.join('data','resnet20','3x3'))
 parser.add_argument('--mult_init_prior', type=str, default='',
@@ -76,8 +76,8 @@ parser.add_argument('--mult_init_prior', type=str, default='',
 parser.add_argument('--lr', default=0.1, type=float, help='Initial learning rate')
 parser.add_argument('--weight_decay', default=1e-4, type=float)
 parser.add_argument('--momentum', default=0.9, type=float)
-parser.add_argument('--milestones', type=int, nargs='*', default=[80,100])
-parser.add_argument('--gammas', default=[0.5,0.2], nargs='*', type=float)
+parser.add_argument('--milestones', type=int, nargs='*', default=[40,50])
+parser.add_argument('--gammas', default=[0.5,0.5], nargs='*', type=float)
 
 
 args = parser.parse_args()
