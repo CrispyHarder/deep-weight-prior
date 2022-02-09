@@ -251,7 +251,7 @@ class CifarC_dataset(Dataset):
         labels_path = os.path.join(ds_path,'labels.npy')
         self.images = np.load(images_path).astype(np.single)
         self.labels = np.load(labels_path).astype(np.single)
-        self.transf = transforms.Compose([transforms.ToTensor()])
+        self.transf = transforms.Compose([transforms.ToPILImage(),transforms.ToTensor()])
 
     def __len__(self):
         return len(self.labels)
