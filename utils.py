@@ -252,14 +252,12 @@ class CifarC_dataset(Dataset):
         self.images = np.load(images_path).astype(np.single)
         self.labels = np.load(labels_path).astype(np.single)
         self.transf = transforms.Compose([transforms.ToTensor()])
-        self.images = self.transf(self.images)
-        self.labels = self.transf(self.labels)
 
     def __len__(self):
         return len(self.labels)
 
     def __getitem__(self, idx):
-        return self.images[idx], self.labels[idx]
+        return self.transf(self.images[idx]), self.transf(self.labels[idx])
 
 def load_cifar_c_loader(level):
     dataset = CifarC_dataset(level)
