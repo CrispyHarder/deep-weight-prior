@@ -49,7 +49,7 @@ def eval_run(testloader,ensemble,corr_lvl,args):
     
     print(results)
 
-    save_dir = os.path.join('logs','ensemble results',args.data)
+    save_dir = os.path.join('logs','ensemble_results',args.data)
     save_path = os.path.join(save_dir,f'{args.init} {args.n_members} {corr_lvl}')
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
