@@ -249,15 +249,15 @@ class CifarC_dataset(Dataset):
         ds_path = os.path.join('data','CIFAR-10-C',f'level_{level}')
         images_path = os.path.join(ds_path,'images.npy')
         labels_path = os.path.join(ds_path,'labels.npy')
-        self.images = np.load(images_path).astype(np.single)
-        self.labels = np.load(labels_path).astype(np.single)
-        self.transf = transforms.Compose([transforms.ToPILImage(),transforms.ToTensor()])
+        self.images = np.load(images_path)
+        self.labels = np.load(labels_path)
+        self.transf = transforms.Compose([transforms.ToTensor()])
 
     def __len__(self):
         return len(self.labels)
 
     def __getitem__(self, idx):
-        return self.transf(self.images[idx]), self.transf(self.labels[idx])
+        return self.transf(self.images[idx]), self.labels[idx]
 
 def load_cifar_c_loader(level):
     dataset = CifarC_dataset(level)
