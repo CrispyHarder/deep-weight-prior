@@ -8,75 +8,75 @@ import myexman
 from my_utils import save_args_params
 from models import vae
 from torch.utils.tensorboard import SummaryWriter
+import torch.distributions as dist
 
 def train(trainloader, testloader, vae, optimizer, args, writer):
     logger = Logger(name='logs', base=args.root)
-    best_loss = 11e8
+    best_elbo = -1000000
+    prior = dist.Normal(torch.FloatTensor([0.]).to(vae.device), torch.FloatTensor([1.]).to(vae.device))
     for epoch in range(1, args.num_epochs + 1):
 
         #set learning rate
         adjust_learning_rate(optimizer, lr_linear(epoch-1))
 
-        train_KLD = utils.MovingMetric()
-        train_recon_loss = utils.MovingMetric()
+        train_likelihood = utils.MovingMetric()
+        train_kl = utils.MovingMetric()
         train_loss = utils.MovingMetric()
 
         for i, x in enumerate(trainloader):
             optimizer.zero_grad()
             x = x.to(vae.device)
-            _ , recon_loss, kl_loss = vae(x) 
+            [z_mu, z_var], [x_mu, x_var] = vae(x)
             
-            avg_KLD = kl_loss
-            loss = recon_loss + avg_KLD
+            likelihood = dist.Normal(x_mu, torch.sqrt(x_var)).log_prob(x).sum()
+            kl = dist.kl_divergence(dist.Normal(z_mu, torch.sqrt(z_var)), prior).sum()
+            loss = -likelihood + kl
 
             loss.backward()
             optimizer.step()
 
-            train_KLD.add(avg_KLD.item(), x.size(0))
-            train_recon_loss.add(recon_loss.item(), x.size(0))
-            train_loss.add(loss.item(),x.size(0))
+            train_likelihood.add(likelihood.item(), x.size(0))
+            train_kl.add(kl.item(), x.size(0))
+            train_loss.add(loss.item(), x.size(0))
 
-        test_KLD = utils.MovingMetric()
-        test_recon_loss = utils.MovingMetric()
+        test_kl = utils.MovingMetric()
+        test_likelihood = utils.MovingMetric()
         test_loss = utils.MovingMetric()
 
         for i, x in enumerate(testloader):
             x = x.to(vae.device)
-            _ , recon_loss, kl_loss = vae(x)
+            [z_mu, z_var], [x_mu, x_var] = vae(x)
            
-            avg_KLD = kl_loss
-            loss = recon_loss + avg_KLD
-
-            test_KLD.add(avg_KLD.item(), x.size(0))
-            test_recon_loss.add(recon_loss.item(), x.size(0))
-            test_loss.add(loss.item(),x.size(0))
+            test_likelihood.add(dist.Normal(x_mu, torch.sqrt(x_var)).log_prob(x).sum().item(), x.size(0))
+            test_kl.add(dist.kl_divergence(dist.Normal(z_mu, torch.sqrt(z_var)), prior).sum().item(), x.size(0))
         
-        train_KLD = train_KLD.get_val()
-        train_recon_loss = train_recon_loss.get_val()
+        train_kl = train_kl.get_val()
+        train_likelihood = train_likelihood.get_val()
         train_loss = train_loss.get_val()
-        test_KLD = test_KLD.get_val()
-        test_recon_loss = test_recon_loss.get_val()
-        test_loss = test_loss.get_val()
+        test_kl = test_kl.get_val()
+        test_likelihood = test_likelihood.get_val()
+        test_loss = test_kl - test_likelihood
 
-        logger.add_scalar(epoch, 'train_KLD', train_KLD)
-        logger.add_scalar(epoch, 'train_recon_loss', train_recon_loss)
+        logger.add_scalar(epoch, 'train_kl', train_kl)
+        logger.add_scalar(epoch, 'train_likelyhood', train_likelihood)
         logger.add_scalar(epoch, 'train_loss', train_loss)
-        logger.add_scalar(epoch, 'test_KLD', test_KLD)
-        logger.add_scalar(epoch, 'test_recon_loss', test_recon_loss)
+        logger.add_scalar(epoch, 'test_kl', test_kl)
+        logger.add_scalar(epoch, 'test_likelilhod', test_likelihood)
         logger.add_scalar(epoch, 'test_loss', test_loss)
         logger.iter_info()
         logger.save()
 
-        writer.add_scalar('train/KLD',train_KLD,epoch)
-        writer.add_scalar('train/recon_loss',train_recon_loss,epoch)
+        writer.add_scalar('train/kl',train_kl,epoch)
+        writer.add_scalar('train/likelihood',train_likelihood,epoch)
         writer.add_scalar('train/loss',train_loss,epoch)
-        writer.add_scalar('test/KLD',test_KLD,epoch)
-        writer.add_scalar('test/recon_loss',test_recon_loss,epoch)
+        writer.add_scalar('test/kl',test_kl,epoch)
+        writer.add_scalar('test/likelihod',test_likelihood,epoch)
         writer.add_scalar('test/loss',test_loss,epoch)
 
-        is_best = test_loss < best_loss
+        test_elbo = test_likelihood - test_kl
+        is_best = (test_elbo>best_elbo)
         if is_best:
-            best_loss = test_loss
+            best_elbo = test_elbo
             torch.save(vae.state_dict(), os.path.join(args.root, 'vae_params.torch'))   
             if args.add_save_path : 
                 torch.save(vae.state_dict(), os.path.join(args.add_save_path, 'vae_params.torch'))  
