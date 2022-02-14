@@ -3,6 +3,23 @@ import argparse
 import os 
 from my_utils import sorted_alphanumeric
 
+def get_nr_epochs(layer_nr):
+    layer_nr = int(layer_nr.split('_')[1])
+    if layer_nr == 0:
+        return 150
+    elif layer_nr <= 6:
+        return 45
+    elif layer_nr == 7:
+        return 25
+    elif layer_nr <= 12:
+        return 10
+    elif layer_nr == 13:
+        return 7
+    elif layer_nr <= 18: 
+        return 4
+    else:
+        return RuntimeError
+        
 def run_train_vae(args):
     string = 'python train-vaeV2.py'
     for arg in vars(args):
@@ -22,7 +39,7 @@ parser.add_argument('--gpu_id', default='0')
 
 #optimisation 
 parser.add_argument('--lr', default=0.001, type=float)
-parser.add_argument('--weight_decay', type=float, default=0.0001)
+parser.add_argument('--weight_decay', type=float, default=1)
 
 #evaluation
 parser.add_argument('--test_bs', default=512, type=int)
@@ -59,5 +76,6 @@ for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:end_lay
         os.makedirs(vae_save_path)
     setattr(args,'data_dir',data_path)  
     setattr(args, 'add_save_path',vae_save_path)
+    setattr(args, 'num_epochs',get_nr_epochs(layer))
     run_train_vae(args)
 
