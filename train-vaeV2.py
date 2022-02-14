@@ -9,7 +9,7 @@ from my_utils import save_args_params
 from models import vae
 from torch.utils.tensorboard import SummaryWriter
 
-def train(trainloader, testloader, vae, optimizer, args):
+def train(trainloader, testloader, vae, optimizer, args, writer):
     logger = Logger(name='logs', base=args.root)
     best_loss = 11e8
     for epoch in range(1, args.num_epochs + 1):
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     parser = myexman.ExParser(file=__file__)
     #train settings 
     parser.add_argument('--data_dir', default='')
-    
+
     parser.add_argument('--num_epochs', default=300, type=int)
     parser.add_argument('--batch_size', default=128, type=int)
     parser.add_argument('--seed', default=42, type=int)

@@ -34,8 +34,8 @@ parser.add_argument('--hidden_dim', default=16, type=int)
 #misc
 parser.add_argument('--start_at_layer', type=int, default=0, help='''at which layer the 
                         vqvaes should be started to train ''')
-parser.add_argument('--end_at_layer', type=int, default=18, help='''at which layer the 
-                        vqvaes should be started to train ''')
+parser.add_argument('--end_at_layer', type=int, default=18, help='''after which layer the 
+                        vqvaes should be stopped to train ''')
 
 parser.add_argument('--add_save_path',default='')#for later use 
 
