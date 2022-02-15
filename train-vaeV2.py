@@ -18,6 +18,7 @@ def train(trainloader, testloader, vae, optimizer, args, writer):
     test_kl = utils.MovingMetric()
     test_likelihood = utils.MovingMetric()
     test_loss = utils.MovingMetric()
+    test_recon_loss = utils.MovingMetric()
 
     for i, x in enumerate(testloader):
         x = x.to(vae.device)
@@ -25,20 +26,24 @@ def train(trainloader, testloader, vae, optimizer, args, writer):
         
         test_likelihood.add(dist.Normal(x_mu, torch.sqrt(x_var)).log_prob(x).sum().item(), x.size(0))
         test_kl.add(dist.kl_divergence(dist.Normal(z_mu, torch.sqrt(z_var)), prior).sum().item(), x.size(0))
+        test_recon_loss.add(F.mse_loss(x,x_mu).item(), x.size(0))
 
     test_kl = test_kl.get_val()
     test_likelihood = test_likelihood.get_val()
     test_loss = test_kl - test_likelihood
+    test_recon_loss = test_recon_loss.get_val()
 
     logger.add_scalar(0, 'test_kl', test_kl)
     logger.add_scalar(0, 'test_likelilhod', test_likelihood)
     logger.add_scalar(0, 'test_loss', test_loss)
+    logger.add_scalar(0, 'test_recon_loss', test_recon_loss)
     logger.iter_info()
     logger.save()
 
     writer.add_scalar('test/kl',test_kl,0)
     writer.add_scalar('test/likelihod',test_likelihood,0)
     writer.add_scalar('test/loss',test_loss,0)
+    writer.add_scalar('test/recon_loss',test_recon_loss,0)
 
     torch.save(vae.state_dict(), os.path.join(args.root, 'vae_params_init.torch'))
 
@@ -50,6 +55,7 @@ def train(trainloader, testloader, vae, optimizer, args, writer):
         train_likelihood = utils.MovingMetric()
         train_kl = utils.MovingMetric()
         train_loss = utils.MovingMetric()
+        train_recon_loss = utils.MovingMetric()
 
         for i, x in enumerate(trainloader):
             optimizer.zero_grad()
@@ -63,13 +69,17 @@ def train(trainloader, testloader, vae, optimizer, args, writer):
             loss.backward()
             optimizer.step()
 
+            recon_loss = F.mse_loss(x,x_mu)
+
             train_likelihood.add(likelihood.item(), x.size(0))
             train_kl.add(kl.item(), x.size(0))
             train_loss.add(loss.item(), x.size(0))
+            train_recon_loss.add(recon_loss.item(), x.size(0))
 
         test_kl = utils.MovingMetric()
         test_likelihood = utils.MovingMetric()
         test_loss = utils.MovingMetric()
+        test_recon_loss = utils.MovingMetric()
 
         for i, x in enumerate(testloader):
             x = x.to(vae.device)
@@ -77,29 +87,36 @@ def train(trainloader, testloader, vae, optimizer, args, writer):
            
             test_likelihood.add(dist.Normal(x_mu, torch.sqrt(x_var)).log_prob(x).sum().item(), x.size(0))
             test_kl.add(dist.kl_divergence(dist.Normal(z_mu, torch.sqrt(z_var)), prior).sum().item(), x.size(0))
-        
+            test_recon_loss.add(F.mse_loss(x,x_mu).item(), x.size(0))
+
         train_kl = train_kl.get_val()
         train_likelihood = train_likelihood.get_val()
         train_loss = train_loss.get_val()
+        train_recon_loss = train_recon_loss.get_val()
         test_kl = test_kl.get_val()
         test_likelihood = test_likelihood.get_val()
         test_loss = test_kl - test_likelihood
+        test_recon_loss = test_recon_loss.get_val()
 
         logger.add_scalar(epoch, 'train_kl', train_kl)
         logger.add_scalar(epoch, 'train_likelyhood', train_likelihood)
         logger.add_scalar(epoch, 'train_loss', train_loss)
+        logger.add_scalar(epoch, 'train_recon_loss', train_recon_loss)
         logger.add_scalar(epoch, 'test_kl', test_kl)
         logger.add_scalar(epoch, 'test_likelilhod', test_likelihood)
         logger.add_scalar(epoch, 'test_loss', test_loss)
+        logger.add_scalar(epoch, 'test_recon_loss', test_recon_loss)
         logger.iter_info()
         logger.save()
 
         writer.add_scalar('train/kl',train_kl,epoch)
         writer.add_scalar('train/likelihood',train_likelihood,epoch)
         writer.add_scalar('train/loss',train_loss,epoch)
+        writer.add_scalar('train/recon_loss',train_recon_loss,epoch)
         writer.add_scalar('test/kl',test_kl,epoch)
         writer.add_scalar('test/likelihod',test_likelihood,epoch)
         writer.add_scalar('test/loss',test_loss,epoch)
+        writer.add_scalar('test/recon_loss',test_recon_loss,epoch)
 
         test_elbo = test_likelihood - test_kl
         is_best = (test_elbo>best_elbo)
