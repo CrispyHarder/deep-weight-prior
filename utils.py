@@ -466,9 +466,8 @@ def load_vqvae1(path, device=None):
     with open(os.path.join(path, 'params.yaml')) as f:
         args = yaml.full_load(f)
     
-    if args['kernel_dim'] == 3:
-        decoder = vqvae1_mod.Decoder3x3(args['z_dim'], args['hidden_dim'])
-        encoder = vqvae1_mod.Encoder3x3(args['z_dim'], args['hidden_dim']) 
+    decoder = vqvae1_mod.Decoder3x3(args['z_dim'], args['hidden_dim'])
+    encoder = vqvae1_mod.Encoder3x3(args['z_dim'], args['hidden_dim']) 
     
     vqvae = vqvae1_mod.VQVAE(encoder, decoder, args['num_embeddings'], args['commitment_cost'],
         device=device, decay=args['ema_decay'])

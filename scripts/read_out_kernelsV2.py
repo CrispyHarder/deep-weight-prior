@@ -17,7 +17,7 @@ source_path = os.path.join('logs',f'exman-train-net-{args.dataset}.py','runs')
 
 slices = [[] for _ in range(19)]
 for run in os.listdir(source_path)[:80]:
-    run_cp_path = os.path.join(source_path,run,'net_params.torch')
+    run_cp_path = os.path.join(source_path,run,'net_params_lastepoch.torch')
     state_dict = load_statedict(run_cp_path,map_location=torch.device('cpu'))
     layer = 0
     for param_tensor in state_dict: 
@@ -27,7 +27,7 @@ for run in os.listdir(source_path)[:80]:
             slices[layer].append(torch.reshape(params,(p_shape[0]*p_shape[1],p_shape[2],p_shape[3])))
             layer += 1 
 cat_slices = [torch.cat(entry) for entry in slices]
-np_slices = [t.numpy() for t in cat_slices]
+np_slices = [np.expand_dims(t.numpy(),axis=1) for t in cat_slices]
 for n_layer in range(19):
     full_target_path = os.path.join(target_path,'layer_'+str(n_layer),'conv')
     if not os.path.exists(full_target_path):
@@ -36,7 +36,7 @@ for n_layer in range(19):
 
 slices = [[] for _ in range(19)]
 for run in os.listdir(source_path)[80:]:
-    run_cp_path = os.path.join(source_path,run,'net_params.torch')
+    run_cp_path = os.path.join(source_path,run,'net_params_lastepoch.torch')
     state_dict = load_statedict(run_cp_path,map_location=torch.device('cpu'))
     layer = 0
     for param_tensor in state_dict: 
@@ -46,7 +46,7 @@ for run in os.listdir(source_path)[80:]:
             slices[layer].append(torch.reshape(params,(p_shape[0]*p_shape[1],p_shape[2],p_shape[3])))
             layer += 1 
 cat_slices = [torch.cat(entry) for entry in slices]
-np_slices = [t.numpy() for t in cat_slices]
+np_slices = [np.expand_dims(t.numpy(),axis=1) for t in cat_slices]
 for n_layer in range(19):
     full_target_path = os.path.join(target_path,'layer_'+str(n_layer),'conv')
     if not os.path.exists(full_target_path):
