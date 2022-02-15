@@ -52,7 +52,7 @@ class LVAE(nn.Module):
         z_dist = dist.Normal(mu, torch.sqrt(var))
 
         z = z_dist.rsample().to(self.device)
-        kl_loss = dist.kl_divergence(z_dist, self.prior).sum()
+        kl_loss = dist.kl_divergence(z_dist, self.prior).sum()/x.shape(0)
 
         x_recon = self.decoder(z)
         recon_loss = F.mse_loss(x,x_recon)
