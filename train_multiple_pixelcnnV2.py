@@ -67,7 +67,7 @@ def get_input_dim(device,vq_name):
     return vqvae.num_embeddings
 
 def run_train_pixelcnn(args):
-    string = 'python train-pixelcnn.py'
+    string = 'python train-pixelcnnV2.py'
     for arg in vars(args):
         string += ' --'+str(arg)+' '+str(getattr(args,arg))
     os.system(string)
