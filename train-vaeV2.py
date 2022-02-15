@@ -14,6 +14,34 @@ def train(trainloader, testloader, vae, optimizer, args, writer):
     logger = Logger(name='logs', base=args.root)
     best_elbo = -1000000
     prior = dist.Normal(torch.FloatTensor([0.]).to(vae.device), torch.FloatTensor([1.]).to(vae.device))
+
+    test_kl = utils.MovingMetric()
+    test_likelihood = utils.MovingMetric()
+    test_loss = utils.MovingMetric()
+
+    for i, x in enumerate(testloader):
+        x = x.to(vae.device)
+        [z_mu, z_var], [x_mu, x_var] = vae(x)
+        
+        test_likelihood.add(dist.Normal(x_mu, torch.sqrt(x_var)).log_prob(x).sum().item(), x.size(0))
+        test_kl.add(dist.kl_divergence(dist.Normal(z_mu, torch.sqrt(z_var)), prior).sum().item(), x.size(0))
+
+    test_kl = test_kl.get_val()
+    test_likelihood = test_likelihood.get_val()
+    test_loss = test_kl - test_likelihood
+
+    logger.add_scalar(0, 'test_kl', test_kl)
+    logger.add_scalar(0, 'test_likelilhod', test_likelihood)
+    logger.add_scalar(0, 'test_loss', test_loss)
+    logger.iter_info()
+    logger.save()
+
+    writer.add_scalar('test/kl',test_kl,0)
+    writer.add_scalar('test/likelihod',test_likelihood,0)
+    writer.add_scalar('test/loss',test_loss,0)
+
+    torch.save(vae.state_dict(), os.path.join(args.root, 'vae_params_init.torch'))
+
     for epoch in range(1, args.num_epochs + 1):
 
         #set learning rate
