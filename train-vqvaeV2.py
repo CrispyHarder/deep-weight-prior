@@ -27,10 +27,10 @@ def train(trainloader, testloader, vqvae, optimizer, args, writer):
         recon_loss = F.mse_loss(x,x_recon)
         loss = vq_loss + recon_loss
 
-        test_recon_loss.add(recon_loss.item(), x.size(0))
-        test_vq_loss.add(vq_loss.item(), x.size(0))
+        test_recon_loss.add(recon_loss.item()*x.size(0), x.size(0))
+        test_vq_loss.add(vq_loss.item()*x.size(0), x.size(0))
         test_perplexity.add(perplexity.item(), x.size(0))
-        test_loss.add(loss.item(),x.size(0))
+        test_loss.add(loss.item()*x.size(0), x.size(0))
 
     test_recon_loss = test_recon_loss.get_val()
     test_vq_loss = test_vq_loss.get_val()
@@ -71,10 +71,10 @@ def train(trainloader, testloader, vqvae, optimizer, args, writer):
             loss.backward()
             optimizer.step()
 
-            train_recon_loss.add(recon_loss.item(), x.size(0))
-            train_vq_loss.add(vq_loss.item(), x.size(0))
+            train_recon_loss.add(recon_loss.item()*x.size(0), x.size(0))
+            train_vq_loss.add(vq_loss.item()*x.size(0), x.size(0))
             train_perplexity.add(perplexity.item(), x.size(0))
-            train_loss.add(loss.item(),x.size(0))
+            train_loss.add(loss.item()*x.size(0), x.size(0))
 
         test_recon_loss = utils.MovingMetric()
         test_vq_loss = utils.MovingMetric()
@@ -88,10 +88,10 @@ def train(trainloader, testloader, vqvae, optimizer, args, writer):
             recon_loss = F.mse_loss(x,x_recon)
             loss = vq_loss + recon_loss
 
-            test_recon_loss.add(recon_loss.item(), x.size(0))
-            test_vq_loss.add(vq_loss.item(), x.size(0))
+            test_recon_loss.add(recon_loss.item()*x.size(0), x.size(0))
+            test_vq_loss.add(vq_loss.item()*x.size(0), x.size(0))
             test_perplexity.add(perplexity.item(), x.size(0))
-            test_loss.add(loss.item(),x.size(0))
+            test_loss.add(loss.item()*x.size(0), x.size(0))
 
         train_recon_loss = train_recon_loss.get_val()
         test_recon_loss = test_recon_loss.get_val()

@@ -26,7 +26,7 @@ def train(trainloader, testloader, vae, optimizer, args, writer):
         
         test_likelihood.add(dist.Normal(x_mu, torch.sqrt(x_var)).log_prob(x).sum().item(), x.size(0))
         test_kl.add(dist.kl_divergence(dist.Normal(z_mu, torch.sqrt(z_var)), prior).sum().item(), x.size(0))
-        test_recon_loss.add(F.mse_loss(x,x_mu).item(), x.size(0))
+        test_recon_loss.add(F.mse_loss(x,x_mu).item()*x.size(0), x.size(0))
 
     test_kl = test_kl.get_val()
     test_likelihood = test_likelihood.get_val()
@@ -74,7 +74,7 @@ def train(trainloader, testloader, vae, optimizer, args, writer):
             train_likelihood.add(likelihood.item(), x.size(0))
             train_kl.add(kl.item(), x.size(0))
             train_loss.add(loss.item(), x.size(0))
-            train_recon_loss.add(recon_loss.item(), x.size(0))
+            train_recon_loss.add(recon_loss.item()*x.size(0), x.size(0))
 
         test_kl = utils.MovingMetric()
         test_likelihood = utils.MovingMetric()
@@ -87,7 +87,7 @@ def train(trainloader, testloader, vae, optimizer, args, writer):
            
             test_likelihood.add(dist.Normal(x_mu, torch.sqrt(x_var)).log_prob(x).sum().item(), x.size(0))
             test_kl.add(dist.kl_divergence(dist.Normal(z_mu, torch.sqrt(z_var)), prior).sum().item(), x.size(0))
-            test_recon_loss.add(F.mse_loss(x,x_mu).item(), x.size(0))
+            test_recon_loss.add(F.mse_loss(x,x_mu).item()*x.size(0), x.size(0))
 
         train_kl = train_kl.get_val()
         train_likelihood = train_likelihood.get_val()
