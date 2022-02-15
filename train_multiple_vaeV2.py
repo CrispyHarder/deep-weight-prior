@@ -32,7 +32,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str)
 
 parser.add_argument('--data_dir',default='') # for later use 
-parser.add_argument('--num_epochs', default=100, type=int)
+parser.add_argument('--num_epochs', default=100, type=int) # is overwritten anyways
 parser.add_argument('--batch_size', default=128, type=int)
 parser.add_argument('--seed', default=42, type=int)
 parser.add_argument('--gpu_id', default='0')
@@ -45,8 +45,8 @@ parser.add_argument('--weight_decay', type=float, default=1)
 parser.add_argument('--test_bs', default=512, type=int)
 
 #model specifics
-parser.add_argument('--z_dim', default=2, type=int)
-parser.add_argument('--hidden_dim', default=16, type=int)
+parser.add_argument('--z_dim', default=8, type=int)
+parser.add_argument('--hidden_dim', default=32, type=int)
 
 #misc
 parser.add_argument('--start_at_layer', type=int, default=0, help='''at which layer the 

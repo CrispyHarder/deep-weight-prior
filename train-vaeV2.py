@@ -136,15 +136,15 @@ if __name__ == '__main__':
     parser.add_argument('--gpu_id', default='0')
 
     #optimisation
-    parser.add_argument('--weight_decay', type=float, default=0.)
-    parser.add_argument('--lr', default=1e-4, type=float)
+    parser.add_argument('--weight_decay', type=float, default=1.)
+    parser.add_argument('--lr', default=0.01, type=float)
     
     #evaluation
     parser.add_argument('--test_bs', default=512, type=int)
 
     #model specifics
     parser.add_argument('--z_dim', default=8, type=int)
-    parser.add_argument('--hidden_dim', default=16, type=int)
+    parser.add_argument('--hidden_dim', default=32, type=int)
     
     #misc
     parser.add_argument('--add_save_path', default='')
