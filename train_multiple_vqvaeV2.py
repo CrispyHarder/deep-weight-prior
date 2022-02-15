@@ -38,7 +38,7 @@ parser.add_argument('--seed', default=42, type=int)
 parser.add_argument('--gpu_id', default='0')
 
 #optimisation 
-parser.add_argument('--lr', default=0.001, type=float)
+parser.add_argument('--lr', default=0.01, type=float)
 parser.add_argument('--weight_decay', type=float, default=1)
 
 #evaluation
@@ -47,8 +47,8 @@ parser.add_argument('--test_bs', default=512, type=int)
 #model specifics
 parser.add_argument('--vqvae_spec', type=str, help='which paramter version')
 
-parser.add_argument('--z_dim', default=8, type=int)
-parser.add_argument('--hidden_dim', default=16, type=int)
+parser.add_argument('--z_dim', default=5, type=int)
+parser.add_argument('--hidden_dim', default=22, type=int)
 parser.add_argument('--num_embeddings', type=int, default=128)
 parser.add_argument('--ema_decay', type= float, default=0.)
 parser.add_argument('--commitment_cost', type=float, default=0.25)
