@@ -22,7 +22,7 @@ def train(trainloader, testloader, pixelcnn, optimizer, args, writer):
             logits = logits.permute(0,2,3,1).contiguous() 
             t_loss = F.cross_entropy(logits.view(-1, args.input_dim),latents.view(-1))
 
-        test_loss.add(t_loss.item(), latents.size(0))
+        test_loss.add(t_loss.item()*latents.size(0), latents.size(0))
     
     test_loss = test_loss.get_val()
 
@@ -51,7 +51,7 @@ def train(trainloader, testloader, pixelcnn, optimizer, args, writer):
             loss.backward()
             optimizer.step()
 
-            train_loss.add(loss.item(), latents.size(0))
+            train_loss.add(loss.item()*latents.size(0), latents.size(0))
 
         for i,latents in enumerate(testloader):
             with torch.no_grad():
@@ -60,7 +60,7 @@ def train(trainloader, testloader, pixelcnn, optimizer, args, writer):
                 logits = logits.permute(0,2,3,1).contiguous() 
                 t_loss = F.cross_entropy(logits.view(-1, args.input_dim),latents.view(-1))
 
-            test_loss.add(t_loss.item(), latents.size(0))
+            test_loss.add(t_loss.item()*latents.size(0), latents.size(0))
 
         train_loss = train_loss.get_val()
         test_loss = test_loss.get_val()
