@@ -38,10 +38,10 @@ parser.add_argument('--seed', default=42, type=int)
 parser.add_argument('--gpu_id', default='0')
 
 #optimisation 
-parser.add_argument('--lr', default=0.001, type=float)
+parser.add_argument('--lr', default=0.01, type=float)
 parser.add_argument('--weight_decay', type=float, default=1)
 
-#evaluation
+#evaluation 
 parser.add_argument('--test_bs', default=512, type=int)
 
 #model specifics
