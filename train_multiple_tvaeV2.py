@@ -63,17 +63,15 @@ args = parser.parse_args()
 data_root_path = os.path.join('data',f'resnet20_{args.dataset}','3x3')
 start_layer = args.start_at_layer
 end_layer = args.end_at_layer
-spec = args.tvae_spec 
 
 delattr(args,'start_at_layer')
 delattr(args,'end_at_layer')
-delattr(args,'tvae_spec')
 delattr(args,'dataset')
 
 for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:end_layer+1]:
     data_path = os.path.join(data_root_path,layer,'conv')
     tvae_save_path = os.path.join(data_root_path,layer,
-                        'tvae{}'.format(spec))
+                        'tvae')
     if not os.path.exists(tvae_save_path):
         os.makedirs(tvae_save_path)
     setattr(args,'data_dir',data_path)  
