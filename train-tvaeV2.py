@@ -28,7 +28,6 @@ def train(trainloader, testloader, tvae, optimizer, args, writer):
         z, u, s, x_recon, kl_z, kl_u, recon_loss = tvae(x)
         
         avg_KLD = (kl_z.sum() + kl_u.sum()) / x.shape[0]
-        recon_loss = recon_loss.sum() / x.shape[0]
         loss = recon_loss + avg_KLD
 
         test_KLD.add(avg_KLD.item()*x.shape[0], x.shape[0])
@@ -65,7 +64,6 @@ def train(trainloader, testloader, tvae, optimizer, args, writer):
             z, u, s, x_recon, kl_z, kl_u, recon_loss = tvae(x) 
             
             avg_KLD = (kl_z.sum() + kl_u.sum()) / x.shape[0]
-            recon_loss = recon_loss.sum() / x.shape[0]
             loss = recon_loss + avg_KLD
 
             loss.backward()
@@ -84,7 +82,6 @@ def train(trainloader, testloader, tvae, optimizer, args, writer):
             z, u, s, x_recon, kl_z, kl_u, recon_loss = tvae(x)
            
             avg_KLD = (kl_z.sum() + kl_u.sum()) / x.shape[0]
-            recon_loss = recon_loss.sum() / x.shape[0]
             loss = recon_loss + avg_KLD
 
             test_KLD.add(avg_KLD.item()*x.shape[0], x.shape[0])
