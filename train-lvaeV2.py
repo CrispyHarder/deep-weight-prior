@@ -24,9 +24,9 @@ def train(trainloader, testloader, lvae, optimizer, args, writer):
         
         loss = recon_loss + kl_loss
 
-        test_KLD.add(kl_loss.item()*x.shape(0), x.shape(0))
-        test_recon_loss.add(recon_loss.item()*x.shape(0), x.shape(0))
-        test_loss.add(loss.item()*x.shape(0), x.shape(0))
+        test_KLD.add(kl_loss.item()*x.size(0), x.size(0))
+        test_recon_loss.add(recon_loss.item()*x.size(0), x.size(0))
+        test_loss.add(loss.item()*x.size(0), x.size(0))
 
     test_KLD = test_KLD.get_val()
     test_recon_loss = test_recon_loss.get_val()
@@ -63,9 +63,9 @@ def train(trainloader, testloader, lvae, optimizer, args, writer):
             loss.backward()
             optimizer.step()
 
-            train_KLD.add(avg_KLD.item()*x.shape(0), x.shape(0))
-            train_recon_loss.add(recon_loss.item()*x.shape(0), x.shape(0))
-            train_loss.add(loss.item()*x.shape(0), x.shape(0))
+            train_KLD.add(avg_KLD.item()*x.size(0), x.size(0))
+            train_recon_loss.add(recon_loss.item()*x.size(0), x.size(0))
+            train_loss.add(loss.item()*x.size(0), x.size(0))
 
         test_KLD = utils.MovingMetric()
         test_recon_loss = utils.MovingMetric()
@@ -78,9 +78,9 @@ def train(trainloader, testloader, lvae, optimizer, args, writer):
             avg_KLD = kl_loss
             loss = recon_loss + avg_KLD
 
-            test_KLD.add(avg_KLD.item()*x.shape(0), x.shape(0))
-            test_recon_loss.add(recon_loss.item()*x.shape(0), x.shape(0))
-            test_loss.add(loss.item()*x.shape(0), x.shape(0))
+            test_KLD.add(avg_KLD.item()*x.size(0), x.size(0))
+            test_recon_loss.add(recon_loss.item()*x.size(0), x.size(0))
+            test_loss.add(loss.item()*x.size(0), x.size(0))
         
         train_KLD = train_KLD.get_val()
         train_recon_loss = train_recon_loss.get_val()
