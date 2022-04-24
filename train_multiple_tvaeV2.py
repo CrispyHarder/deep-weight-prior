@@ -20,8 +20,8 @@ def get_nr_epochs(layer_nr):
     else:
         return RuntimeError
         
-def run_train_tvae(args):
-    string = 'python train-tvaeV2.py'
+def run_train_lvae(args):
+    string = 'python train-lvaeV2.py'
     for arg in vars(args):
         string += ' --'+str(arg)+' '+str(getattr(args,arg))
     os.system(string)
@@ -46,9 +46,8 @@ parser.add_argument('--sgd_momentum',type=float, default=0.9)
 parser.add_argument('--test_bs', default=512, type=int)
 
 #model specifics
-parser.add_argument('--n_caps', default=5, type=int)
-parser.add_argument('--cap_dim', default=4, type=int)
-parser.add_argument('--mu_init', default=30, type=int)
+parser.add_argument('--dims', default=[100,50,10], nargs='*', type=float)
+parser.add_argument('--z_dim', default=2, type=int)
 
 #misc
 parser.add_argument('--start_at_layer', type=int, default=0, help='''at which layer the 
@@ -70,12 +69,12 @@ delattr(args,'dataset')
 
 for layer in sorted_alphanumeric(os.listdir(data_root_path))[start_layer:end_layer+1]:
     data_path = os.path.join(data_root_path,layer,'conv')
-    tvae_save_path = os.path.join(data_root_path,layer,
-                        'tvae')
-    if not os.path.exists(tvae_save_path):
-        os.makedirs(tvae_save_path)
+    lvae_save_path = os.path.join(data_root_path,layer,
+                        'lvae')
+    if not os.path.exists(lvae_save_path):
+        os.makedirs(lvae_save_path)
     setattr(args,'data_dir',data_path)  
-    setattr(args, 'add_save_path',tvae_save_path)
+    setattr(args, 'add_save_path',lvae_save_path)
     setattr(args, 'num_epochs',get_nr_epochs(layer))
-    run_train_tvae(args)
+    run_train_lvae(args)
 
