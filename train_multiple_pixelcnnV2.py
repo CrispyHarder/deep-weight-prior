@@ -66,7 +66,7 @@ def get_input_dim(device,vq_name):
     vqvae = load_vqvae_model(vq_dir,device)
     return vqvae.num_embeddings
 
-def run_train_pixelcnn(args):
+def run_train_pixelcnnV2(args):
     string = 'python train-pixelcnnV2.py'
     for arg in vars(args):
         string += ' --'+str(arg)+' '+str(getattr(args,arg))
@@ -91,9 +91,8 @@ parser.add_argument('--weight_decay', type=float, default=1)
 parser.add_argument('--test_bs', default=512, type=int)
 
 #model specifics
-parser.add_argument('--pixelcnn_spec', type=str, help='which paramter version of pixelcnn is this')
 parser.add_argument('--vqvae_spec', type=str, help='''which paramter version is used 
-                    for getting latents, example: 4''')
+                    for getting latents, example: 4''', default=1)
 
 parser.add_argument('--input_dim', default=8, type=int,
                         help='''the size of the codebook of the vqvae''')
@@ -117,7 +116,6 @@ data_root_path = os.path.join('data',f'resnet20_{args.dataset}','3x3')
 start_layer = args.start_at_layer
 end_layer = args.ent_at_layer
 vq_spec = args.vqvae_spec 
-pix_spec = args.pixelcnn_spec
 vq_name = 'vqvae'+vq_spec
 #get the number of codebook vectors in   the vq model
 setattr(args,'input_dim',get_input_dim(device,vq_name))
@@ -125,7 +123,7 @@ setattr(args,'input_dim',get_input_dim(device,vq_name))
 for i,layer in enumerate(sorted_alphanumeric(os.listdir(data_root_path))[start_layer:end_layer+1]):
     #set and make paths 
     data_path = os.path.join(data_root_path,layer,vq_name,'latents')
-    pix_save_path = os.path.join(data_root_path,layer,vq_name,'pixelcnn{}'.format(pix_spec))
+    pix_save_path = os.path.join(data_root_path,layer,vq_name,'pixelcnn')
     if not os.path.exists(pix_save_path):
         os.makedirs(pix_save_path)
 
@@ -149,5 +147,5 @@ for i,layer in enumerate(sorted_alphanumeric(os.listdir(data_root_path))[start_l
         delattr(args,'vqvae_spec')
         delattr(args,'pixelcnn_spec')
 
-    run_train_pixelcnn(args)
+    run_train_pixelcnnV2(args)
 
