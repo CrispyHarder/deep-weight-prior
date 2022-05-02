@@ -114,9 +114,9 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 data_root_path = os.path.join('data',f'resnet20_{args.dataset}','3x3')
 start_layer = args.start_at_layer
-end_layer = args.ent_at_layer
+end_layer = args.end_at_layer
 vq_spec = args.vqvae_spec 
-vq_name = 'vqvae'+vq_spec
+vq_name = 'vqvae'+str(vq_spec)
 #get the number of codebook vectors in   the vq model
 setattr(args,'input_dim',get_input_dim(device,vq_name))
 
@@ -139,13 +139,10 @@ for i,layer in enumerate(sorted_alphanumeric(os.listdir(data_root_path))[start_l
 
     if i == 0:
         #delete attributes that arent used anymore
-        delattr(args,'data_root_path')
         delattr(args,'start_at_layer')
         delattr(args,'end_at_layer')
         delattr(args,'dataset')     
-        delattr(args,'vqvae_arch')
         delattr(args,'vqvae_spec')
-        delattr(args,'pixelcnn_spec')
 
     run_train_pixelcnnV2(args)
 
