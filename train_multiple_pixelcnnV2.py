@@ -85,7 +85,7 @@ parser.add_argument('--gpu_id', default='0')
 
 #optimisation 
 parser.add_argument('--lr', default=3e-4, type=float)
-parser.add_argument('--weight_decay', type=float, default=1)
+parser.add_argument('--weight_decay', type=float, default=0.)
 
 #evaluation
 parser.add_argument('--test_bs', default=512, type=int)
@@ -95,7 +95,7 @@ parser.add_argument('--vqvae_spec', type=str, help='''which paramter version is 
                     for getting latents, example: 4''', default=1)
 
 parser.add_argument('--input_dim', default=8, type=int,
-                        help='''the size of the codebook of the vqvae''')
+                        help='''the size of the codebook of the vqvae''') #is resetet later 
 parser.add_argument('--dim', default=16, type=int,
                     help='''the hidden size (number of channels per layer)''')
 parser.add_argument('--n_layers', type=int, default=10)
