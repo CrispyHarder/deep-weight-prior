@@ -17,6 +17,7 @@ def train(trainloader, testloader, pixelcnn, optimizer, args, writer):
 
     for i,latents in enumerate(testloader):
         with torch.no_grad():
+            latents = latents.to(device)
             latents = latents.long()
             logits = pixelcnn(latents)
             logits = logits.permute(0,2,3,1).contiguous() 
@@ -43,6 +44,7 @@ def train(trainloader, testloader, pixelcnn, optimizer, args, writer):
 
         for i,latents in enumerate(trainloader):
             latents = latents.long()
+            latents = latents.to(device)
             logits = pixelcnn(latents)
             logits = logits.permute(0,2,3,1).contiguous() 
 
@@ -56,6 +58,7 @@ def train(trainloader, testloader, pixelcnn, optimizer, args, writer):
         for i,latents in enumerate(testloader):
             with torch.no_grad():
                 latents = latents.long()
+                latents = latents.to(device)
                 logits = pixelcnn(latents)
                 logits = logits.permute(0,2,3,1).contiguous() 
                 t_loss = F.cross_entropy(logits.view(-1, args.input_dim),latents.view(-1))
@@ -139,7 +142,7 @@ if __name__ == '__main__':
     testloader, D = utils.get_dataloader(os.path.join(args.data_dir, 'test.npy'), args.test_bs, shuffle=False)
 
     pixel = pixelcnn.GatedPixelCNN(input_dim=args.input_dim,dim=args.dim,n_layers=args.n_layers)
-    
+    pixel = pixel.to(device)
     #configure optimisation
     optimizer = torch.optim.Adam(pixel.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
