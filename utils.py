@@ -313,6 +313,13 @@ def load_pcam_loaders(train_bs,test_bs):
     testloader = torch.utils.data.DataLoader(test_ts, batch_size=test_bs, shuffle=False, num_workers=0)
     return trainloader,valloader,testloader
 
+def load_pcam_dataloaders(bs):
+    base_path = os.path.join('data','dataloaders_pcam')
+    trainloader = torch.load(os.path.join(base_path,f'pcam_trainloader_{bs}.pt'))
+    valloader = torch.load(os.path.join(base_path,f'pcam_valloader_{bs}.pt'))
+    testloader = torch.load(os.path.join(base_path,f'pcam_testloader_{bs}.pt'))
+    return trainloader,valloader,testloader
+    
 def load_cifar10_loaders(bs, test_bs):
     data_root = DATA_ROOT
     transform_test = transforms.Compose([
