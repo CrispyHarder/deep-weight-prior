@@ -8,8 +8,10 @@ import matplotlib.pyplot as plt
 import yaml 
 from datetime import date
 
-logs_path = os.path.join('logs','exman-train-net.py','runs')
-runs = [os.path.join(logs_path,run) for run in os.listdir(logs_path) if run[:6] not in ['000001','000002']]
+DATASET = 'cifar'
+
+logs_path = os.path.join('logs',f'exman-train-net.py-{DATASET}','runs')
+runs = [os.path.join(logs_path,run) for run in os.listdir(logs_path)]
 
 #[['xavier'],['vae'],['he'],['vqvae1.0'],['vqvae1.3'],['vqvae1.0','pixelcnn0'],['vqvae1.3','pixelcnn0']]
 INIT_NAMES = [['vae'],['he'],['xavier'],['vqvae1.5','pixelcnn0'],['vqvae1.6','pixelcnn0'],['vqvae1.0','pixelcnn0'],['vqvae1.3','pixelcnn0'],['ghn_noise'],['ghn_default']]
