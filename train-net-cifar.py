@@ -61,7 +61,7 @@ parser = myexman.ExParser(file=__file__)
 parser.add_argument('--name', default='')
 parser.add_argument('--gpu_id', default='0')
 parser.add_argument('--seed', default=5743, type=int)
-parser.add_argument('--epochs', default=60, type=int, help='Number of epochs')
+parser.add_argument('--epochs', default=120, type=int, help='Number of epochs')
 parser.add_argument('--bs', default=128, type=int, help='Batch size')
 parser.add_argument('--test_bs', default=500, type=int, help='Batch size for test dataloader')
 
