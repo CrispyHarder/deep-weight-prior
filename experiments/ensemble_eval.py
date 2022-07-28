@@ -84,7 +84,7 @@ for init in INIT_NAMES:
         for corr_level in [0,1,2,3,4,5]:
             ensemble = Ensemble(init,n_members,device)
             if corr_level == 0:
-                _,testloader = load_cifar10_loaders(64,500)
+                _,_,testloader = load_cifar10_loaders(64,500)
                 eval_run(testloader,ensemble,corr_level,init,n_members,result_list)
             else:
                 _,testloader = load_cifar_c_loader(corr_level)
