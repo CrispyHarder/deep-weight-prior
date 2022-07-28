@@ -82,7 +82,7 @@ result_list = []
 for init in INIT_NAMES:
     for n_members in [5,10]:
         for corr_level in [0,1,2,3,4,5]:
-            ensemble = Ensemble(args.init,args.n_members,device)
+            ensemble = Ensemble(init,n_members,device)
             if corr_level == 0:
                 _,testloader = load_cifar10_loaders(64,500)
                 eval_run(testloader,ensemble,corr_level,init,n_members,result_list)
