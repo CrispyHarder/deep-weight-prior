@@ -124,8 +124,12 @@ class Ensemble():
     def __init__(self,init,n_members,device):
         self.device = device
         self.members = []
-        self.find_models(init,n_members)
         self.n_members = n_members
+        self.init = init 
+        self.poss_runs = []
+        self.search_models()
+        self.sample_ensemble()
+        
     
     def predict(self,x):
         x = x.to(self.device)
@@ -135,26 +139,33 @@ class Ensemble():
                 logits += member(x)
         return logits/self.n_members
 
-    def find_models(self,init,n_members):
-        found_members = 0
-        path = os.path.join('logs','exman-train-net.py','runs')
-        for run in os.listdir(path)[2:]:
+    def search_models(self):
+        path = os.path.join('logs',f'exman-train-net-cifar.py','runs')
+        for run in os.listdir(path):
             yaml_p = os.path.join(path,run,'params.yaml')
             with open(yaml_p) as f:
                 dict = yaml.full_load(f)
-            if dict['mult_init_mode'] == init:
-                found_members += 1 
-                model = resnet.resnet20()
-                try:
-                    model.load_state_dict(torch.load(os.path.join(path,run, 'vae_params_lastepoch.torch'),map_location=self.device))
-                except:
-                    model.load_state_dict(torch.load(os.path.join(path,run, 'net_params_lastepoch.torch'),map_location=self.device))
-                model = model.to(self.device)
-                model.eval()
-                self.members.append(model)
-                if found_members == n_members:
-                    return
-        raise RuntimeError
+            if not 'mult_init_prior' in dict:
+                if dict['mult_init_mode'] == self.init[0]:
+                    self.poss_runs.append(os.path.join(path,run))
+            elif 'mult_init_prior' in dict and len(self.init) ==1:
+                if dict['mult_init_mode'] == self.init[0] and dict['mult_init_prior'] == '':
+                    self.poss_runs.append(os.path.join(path,run))
+            elif 'mult_init_prior' in dict and len(self.init) ==2:
+                if dict['mult_init_mode'] == self.init[0] and dict['mult_init_prior'] == self.init[1]:
+                    self.poss_runs.append(os.path.join(path,run))
+            if dict['mult_init_mode'] == self.init:
+                self.poss_runs.append(os.path.join(path,run))
+
+    def sample_ensemble(self):
+        sampled_ind = np.random.randint(0,25,size=self.n_members)
+        run_ids = self.poss_runs[sampled_ind]
+        for run_id in run_ids:
+            model = resnet.resnet20()
+            model.load_state_dict(torch.load(os.path.join(run_id,'net_params.torch'),map_location=self.device))
+            model = model.to(self.device)
+            model.eval()
+            self.members.append(model)
 
 
 # Some keys used for the following dictionaries

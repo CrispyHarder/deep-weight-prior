@@ -19,7 +19,8 @@ def weights_init(m):
             nn.init.xavier_uniform_(m.weight.data)
             m.bias.data.fill_(0)
         except AttributeError:
-            print("Skipping initialization of ", classname)
+            pass
+            # print("Skipping initialization of ", classname)
 
 
 class GatedActivation(nn.Module):
@@ -142,7 +143,9 @@ class GatedPixelCNN(nn.Module):
             dtype=torch.int64, device=param.device
         ) * 0
         ##the number above is to init the sampling process,
-        #whether 0 is needed i not clear yet
+        #whether 0 is needed i not clear yet. Since the sampling 
+        #process for the first number is independent from all other 
+        # the number we start with is irrelevant
         for i in range(shape[0]):
             for j in range(shape[1]):
                 logits = self.forward(x)
