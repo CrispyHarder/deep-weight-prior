@@ -121,23 +121,26 @@ def to_one_hot (labels,num_classes=10):
     return one_hot
 
 class Ensemble():
-    def __init__(self,init,n_members,device):
+    def __init__(self,init,device,dataloaders):
         self.device = device
-        self.members = []
-        self.n_members = n_members
         self.init = init 
+        self.dataloaders = dataloaders 
         self.poss_runs = []
+        self.poss_models = []
+        self.pred_all_ds = []
+        self.labels_all_ds = []
         self.search_models()
-        self.sample_ensemble()
+        self.get_models()
+        self.get_predictions()
         
     
-    def predict(self,x):
-        x = x.to(self.device)
-        logits = 0.
-        with torch.no_grad():
-            for member in self.members:
-                logits += member(x)
-        return logits/self.n_members
+    # def predict(self,x):
+    #     x = x.to(self.device)
+    #     logits = 0.
+    #     with torch.no_grad():
+    #         for member in self.members:
+    #             logits += member(x)
+    #     return logits/self.n_members
 
     def search_models(self):
         path = os.path.join('logs',f'exman-train-net-cifar.py','runs')
@@ -157,15 +160,58 @@ class Ensemble():
             if dict['mult_init_mode'] == self.init:
                 self.poss_runs.append(os.path.join(path,run))
 
-    def sample_ensemble(self):
-        sampled_ind = np.random.randint(0,25,size=self.n_members)
-        run_ids = self.poss_runs[sampled_ind]
-        for run_id in run_ids:
+    def get_models(self):
+        for run_id in self.poss_runs:
             model = resnet.resnet20()
             model.load_state_dict(torch.load(os.path.join(run_id,'net_params.torch'),map_location=self.device))
             model = model.to(self.device)
             model.eval()
-            self.members.append(model)
+            self.poss_models.append(model)
+
+    def get_predictions(self):
+        for dl in self.dataloaders: 
+            predictions_one_ds = []
+            for i,model in enumerate(self.poss_models):
+                pred,labels = self.predict(dl,model)
+                predictions_one_ds.append(pred)
+                if i == 0:
+                    self.labels_all_ds.append(labels)
+            self.pred_all_ds.append(predictions_one_ds)
+            self.pred_all_ds = np.array(self.pred_all_ds)
+        
+    def get_ens_prediction(self,n_members,corr_level):
+        sampled_ind = np.random.randint(0,25,size=n_members)
+        pred = self.pred_all_ds[corr_level,sampled_ind]
+        labels = np.array(self.labels_all_ds[corr_level])
+        pred = np.mean(pred,axis=1)
+        prob = F.softmax(torch.from_numpy(pred),axis=1).numpy()
+        return pred,prob,labels
+
+
+
+
+    # def sample_ensemble(self):
+    #     sampled_ind = np.random.randint(0,25,size=self.n_members)
+    #     run_ids = self.poss_runs[sampled_ind]
+    #     for run_id in run_ids:
+    #         model = resnet.resnet20()
+    #         model.load_state_dict(torch.load(os.path.join(run_id,'net_params.torch'),map_location=self.device))
+    #         model = model.to(self.device)
+    #         model.eval()
+    #         self.members.append(model)
+    
+    def predict(self,data, net):
+        prob = []
+        pred = []
+        l = []
+        for x, y in data:
+            l.append(y.numpy())
+            x = x.to(self.device)
+            p = net(x)
+            sp = F.softmax(p, dim=1)
+            pred.append(p.data.cpu().numpy())
+            prob.append(sp.data.cpu().numpy())
+        return np.concatenate(pred), np.concatenate(prob), np.concatenate(l)
 
 
 # Some keys used for the following dictionaries
