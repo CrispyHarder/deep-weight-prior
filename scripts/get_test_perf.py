@@ -1,6 +1,6 @@
 import os 
 import torch 
-from models.cifar.resnet import resnet20
+from models.cifar import ResNet
 import argparse
 from utils import load_cifar10_loaders
 from utils import load_pcam_dataloaders
@@ -26,30 +26,36 @@ def get_perf(data,net):
     
 device = torch.device('cuda:1') 
 DATASETS = ['cifar','pcam']
-model = resnet20().to(device)
 
-_,_,cifar_loader = load_cifar10_loaders(50,500)
+
+# _,_,cifar_loader = load_cifar10_loaders(50,500)
 _,_,pcam_loader = load_pcam_dataloaders(64)
 
 
-### CIFAR ### 
-path = os.path.join('logs',f'exman-train-net-cifar.py','runs')
-for run in os.listdir(path):
-    sd_path = os.path.join(path,run,'net_params.torch')
-    sd = torch.load(sd_path,map_location=device)
-    model.load_state_dict(sd)
-    acc,nll = get_perf(cifar_loader,model)
-    perf_dict = {'acc':acc,'nll':nll}
-    with open(os.path.join(path,run,'perf_dict.json'),'w') as fp:
-        json.dump(perf_dict,fp)
+# ### CIFAR ### 
+# model = ResNet([3,3,3],num_classes=10).to(device)
+# path = os.path.join('logs',f'exman-train-net-cifar.py','runs')
+# for run in os.listdir(path):
+#     sd_path = os.path.join(path,run,'net_params.torch')
+#     sd = torch.load(sd_path,map_location=device)
+#     model.load_state_dict(sd)
+#     acc,nll = get_perf(cifar_loader,model)
+#     nll = np.float64(nll)
+#     perf_dict = {'acc':acc,'nll':nll}
+#     with open(os.path.join(path,run,'perf_dict.json'),'w') as fp:
+#         json.dump(perf_dict,fp)
+
 
 ### PCAM ### 
+model = ResNet([3,3,3],num_classes=2).to(device)
 path = os.path.join('logs',f'exman-train-net-pcam.py','runs')
 for run in os.listdir(path):
     sd_path = os.path.join(path,run,'net_params.torch')
     sd = torch.load(sd_path,map_location=device)
     model.load_state_dict(sd)
-    acc,nll = get_perf(pcam_loader,model)
+    with torch.no_grad():
+        acc,nll = get_perf(pcam_loader,model)
+    nll = np.float64(nll)
     perf_dict = {'acc':acc,'nll':nll}
     with open(os.path.join(path,run,'perf_dict.json'),'w') as fp:
         json.dump(perf_dict,fp)
