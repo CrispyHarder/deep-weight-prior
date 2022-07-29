@@ -8,8 +8,7 @@ from torch.nn import functional as F
 import json 
 import pandas as pd 
 import pickle 
-# INIT_NAMES = [['vae'],['he'],['xavier'],['vqvae1'],['vqvae1','pixelcnn'],['tvae'],['lvae'],['ghn_base'],['ghn_loss'],['ghn_ce']]
-INIT_NAMES = [['vae']] #TODO
+INIT_NAMES = [['vae'],['he'],['xavier'],['vqvae1'],['vqvae1','pixelcnn'],['tvae'],['lvae'],['ghn_base'],['ghn_loss'],['ghn_ce']]
 
 def predict(data, net):
     prob = []
@@ -23,14 +22,12 @@ def predict(data, net):
         pred.append(p.data.cpu().numpy())
         prob.append(sp.data.cpu().numpy())
     return np.concatenate(pred), np.concatenate(prob), np.concatenate(l)
-
-#TODO mae mult runs, by sampling mult times from enseble 
-def eval_run(testloader,ensemble,corr_lvl,init,n_members,result_list):
+def eval_run(ensemble,corr_lvl,init,n_members,result_list):
     '''gets a dataloader and an ensemble with n members 
     and produces 20 samples of that constellation, that are added 
     to a given list'''
     # get predictions and labels 
-    for i in range(1): #TODO
+    for i in range(20):
         with torch.no_grad():
             logits, probs, labels = ensemble.get_ens_prediction(n_members,corr_level)
         #get array of actualy predictions from the logits
@@ -78,23 +75,30 @@ os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_id)
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# dataloaders = (load_cifar10_loaders(64,500)[2],load_cifar_c_loader(1)[1],load_cifar_c_loader(2)[1], TODO
-#     load_cifar_c_loader(3)[1],load_cifar_c_loader(4)[1],load_cifar_c_loader(5)[1])
-dataloaders = (load_cifar10_loaders(64,500)[2])
+_,_,c0 = load_cifar10_loaders(64,500)
+c1 = load_cifar_c_loader(1)
+c2 = load_cifar_c_loader(2)
+c3 = load_cifar_c_loader(3)
+c4 = load_cifar_c_loader(4)
+c5 = load_cifar_c_loader(5)
 
-# get the list of results TODO
+dataloaders = [c0,c1,c2,c3,c4,c5]
+
+
 result_list = [] 
 for init in INIT_NAMES:
     ensemble = Ensemble(init,device,dataloaders)
-    for n_members in [5]:
-        for corr_level in [0]:
+    for n_members in [5,10]:
+        print(n_members)
+        for corr_level in [0,1,2,3,4,5]:
+            print(corr_level)
             eval_run(ensemble,corr_level,init,n_members,result_list)
 
 #make df out of list of lists 
 df = pd.DataFrame(result_list,columns=['Corruption level','Initialisation','n_members',
     'acc','ece','nll','brier'])
 
-save_path = os.path.join('logs','ensemble_results','results.pkl')
+save_path = os.path.join('logs','ensemble_results','resultsrtz.pkl')
 df.to_pickle(save_path)
 
 

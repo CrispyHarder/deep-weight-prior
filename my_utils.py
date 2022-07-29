@@ -176,15 +176,14 @@ class Ensemble():
                 predictions_one_ds.append(pred)
                 if i == 0:
                     self.labels_all_ds.append(labels)
-            self.pred_all_ds.append(predictions_one_ds)
-            self.pred_all_ds = np.array(self.pred_all_ds)
+            self.pred_all_ds.append(np.array(predictions_one_ds))
         
     def get_ens_prediction(self,n_members,corr_level):
         sampled_ind = np.random.randint(0,25,size=n_members)
-        pred = self.pred_all_ds[corr_level,sampled_ind]
+        pred = self.pred_all_ds[corr_level][sampled_ind]
         labels = np.array(self.labels_all_ds[corr_level])
-        pred = np.mean(pred,axis=1)
-        prob = F.softmax(torch.from_numpy(pred),axis=1).numpy()
+        pred = np.mean(pred,axis=0)
+        prob = F.softmax(torch.from_numpy(pred),dim=1).numpy()
         return pred,prob,labels
 
 
@@ -204,14 +203,12 @@ class Ensemble():
         prob = []
         pred = []
         l = []
-        for x, y in data:
+        for i,(x, y) in enumerate(data):
             l.append(y.numpy())
             x = x.to(self.device)
             p = net(x)
-            sp = F.softmax(p, dim=1)
             pred.append(p.data.cpu().numpy())
-            prob.append(sp.data.cpu().numpy())
-        return np.concatenate(pred), np.concatenate(prob), np.concatenate(l)
+        return np.concatenate(pred), np.concatenate(l)
 
 
 # Some keys used for the following dictionaries
