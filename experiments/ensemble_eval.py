@@ -27,6 +27,12 @@ def eval_run(ensemble,corr_lvl,init,n_members,result_list):
     and produces 20 samples of that constellation, that are added 
     to a given list'''
     # get predictions and labels 
+
+    labels_boxes = {'vae':'CVAE','he':'He','xavier':'Xavier','vqvae1':'VQVAE','vqvae1 + pixelcnn':"VQVAE\n+Pixel",'tvae':'TVAE',
+            'lvae':'LVAE','ghn_base':'GHN','ghn_loss':'Noise\nGHN_1','ghn_ce':'Noise\nGHN_0'}
+
+    init_name = init[0] if len(init) == 1 else init[0] + ' + ' + init[1]
+    init_name = labels_boxes[init_name]
     for i in range(20):
         with torch.no_grad():
             logits, probs, labels = ensemble.get_ens_prediction(n_members,corr_level)
@@ -39,7 +45,8 @@ def eval_run(ensemble,corr_lvl,init,n_members,result_list):
         ece = expected_calibration_error(confidences,predictions,labels)
         nll = float(F.cross_entropy(torch.from_numpy(logits), torch.from_numpy(labels)))
         brier = float(brier_multi(labels,probs))
-        result_list.append([corr_lvl,init,n_members,accuracy,ece,nll,brier])
+
+        result_list.append([corr_lvl,init_name,n_members,accuracy,ece,nll,brier])
 
     # #prepare dict to save results
     # results = {
