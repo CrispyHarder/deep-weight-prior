@@ -10,7 +10,7 @@ from datetime import date
 import seaborn as sns 
 import json
 
-DATASET = 'cifar'
+DATASET = 'pcam'
 
 def print_test_perf(files,init):
     acc = []
@@ -27,7 +27,7 @@ def print_test_perf(files,init):
     nll = np.array(nll)
     acc_mean, acc_std = np.mean(acc), np.std(acc)
     nll_mean, nll_std = np.mean(nll), np.std(nll)
-    print(f'{init} has acc {acc_mean} pm {acc_std} and a nll of {nll_mean} pm {nll_std}' )
+    # print(f'{init} has acc {acc_mean} pm {acc_std} and a nll of {nll_mean} pm {nll_std}' )
     return acc,nll 
     
 
@@ -37,13 +37,13 @@ runs = [os.path.join(logs_path,run) for run in os.listdir(logs_path)]
 
 #[['xavier'],['vae'],['he'],['vqvae1.0'],['vqvae1.3'],['vqvae1.0','pixelcnn0'],['vqvae1.3','pixelcnn0']]
 INIT_NAMES = [['vae'],['he'],['xavier'],['vqvae1'],['vqvae1','pixelcnn'],['tvae'],['lvae'],['ghn_base'],['ghn_loss'],['ghn_ce']]
-METR_NAMES = ['NLL Val','ACC Val'] # 'NLL Train','ACC Train',
+METR_NAMES = ['ACC Val'] # 'NLL Train','ACC Train',
 SAVE_PATH = os.path.join('logs','small-results',str(date.today()),'init comparison')
-SAVE_SPEC = DATASET
+SAVE_SPEC = DATASET+'ff'
 SAVE_PLOTS = True
-SHOW_PLOTS = False
+SHOW_PLOTS = True
 STARTING_AT = 0
-ENDING_AT = 41
+ENDING_AT = 16 if DATASET == 'cifar' else 10
 
 if not os.path.exists(SAVE_PATH):
     os.makedirs(SAVE_PATH)
@@ -83,48 +83,57 @@ for i,init in enumerate(INIT_NAMES):
 
 sns.set_theme()
 sns.set_context('paper')
+sns.set(rc={'figure.figsize':(10,8)})
+sns.set(font_scale = 1.9)
 
 
 titles ={'NLL Train':' ','NLL Val':'NLL','ACC Val':'Accuracy','ACC Train':' '}
 legends = {'NLL Train':'upper right','NLL Val':'upper right','ACC Val':'lower right','ACC Train':'lower right'}
 labels = {'vae':'CVAE','he':'He','xavier':'Xavier','vqvae1':'VQVAE','vqvae1 + pixelcnn':'VQVAE + Pixel','tvae':'TVAE',
-            'lvae':'LVAE','ghn_base':'GHN','ghn_loss':'Noise GHN_1','ghn_ce':'Noise GHN_0'}
+            'lvae':'LVAE','ghn_base':'GHN','ghn_loss':'Noise GHN[L]','ghn_ce':'Noise GHN[C]'}
+COLUMN = 3
 for i,m_name in enumerate(METR_NAMES):
-    plt.figure(i)
+    plt.figure()
     for j,init in enumerate(INIT_NAMES):
         label = init[0] if len(init) == 1 else init[0] + ' + ' + init[1]
         label = labels[label]
-        sns.lineplot(x=np.arange(STARTING_AT,ENDING_AT,1),y=data[j][STARTING_AT:ENDING_AT,i],label=label)
+        sns.lineplot(x=np.arange(STARTING_AT,ENDING_AT,1),y=data[j][STARTING_AT:ENDING_AT,COLUMN],label=label)
     plt.title(titles[m_name])
     plt.legend(loc=legends[m_name])
+    plt.tight_layout()
     if SAVE_PLOTS:    
-        plt.savefig(os.path.join(SAVE_PATH,SAVE_SPEC+'_'+m_name))
+        plt.savefig(os.path.join(SAVE_PATH,SAVE_SPEC+'_'+m_name+'.pdf'))
     if SHOW_PLOTS:
         plt.show()
 
 
-labels_boxes = {'vae':'CVAE','he':'He','xavier':'Xavier','vqvae1':'VQVAE','vqvae1 + pixelcnn':"VQVAE\n+Pixel",'tvae':'TVAE',
-            'lvae':'LVAE','ghn_base':'GHN','ghn_loss':'Noise\nGHN_1','ghn_ce':'Noise\nGHN_0'}
+# labels_boxes = {'vae':'CVAE','he':'He','xavier':'Xavier','vqvae1':'VQVAE','vqvae1 + pixelcnn':"VQVAE\n+Pixel",'tvae':'TVAE',
+#             'lvae':'LVAE','ghn_base':'GHN','ghn_loss':'Noise\nGHN[L]','ghn_ce':'Noise\nGHN[C]'}
 
-test_perf_acc = pd.DataFrame(np.transpose(test_perf_acc))
-test_perf_acc.columns = labels_boxes.values()
+# test_perf_acc = pd.DataFrame(np.transpose(test_perf_acc))
+# test_perf_acc.columns = labels_boxes.values()
 
-test_perf_nll = pd.DataFrame(np.transpose(test_perf_nll))
-test_perf_nll.columns = labels_boxes.values()
+# test_perf_nll = pd.DataFrame(np.transpose(test_perf_nll))
+# test_perf_nll.columns = labels_boxes.values()
 
-plt.figure(1+len(METR_NAMES))
-sns.boxplot(data=test_perf_nll)
-plt.legend(loc='lower left')
-plt.title('NLL')
-plt.savefig(os.path.join(SAVE_PATH,SAVE_SPEC+'_nll_boxplot'))
+# sns.set(rc={'figure.figsize':(11,8)})
+# sns.set(font_scale = 1.6)
+
+# plt.figure()
+# b1 = sns.boxplot(data=test_perf_nll)
+# b1.set(xlabel='Initialisation')
+# plt.title('NLL')
+# plt.tight_layout()
+# plt.savefig(os.path.join(SAVE_PATH,SAVE_SPEC+'_nll_boxplot.pdf'))
 
 
-plt.figure(2+len(METR_NAMES))
-sns.boxplot(data=test_perf_acc)
-plt.legend(loc='lower left')
-plt.title('Accuracy')
-plt.savefig(os.path.join(SAVE_PATH,SAVE_SPEC+'_accuracy_boxplot'))
-plt.show()
+# plt.figure()
+# b2 = sns.boxplot(data=test_perf_acc)
+# b2.set(xlabel='Initialisation')
+# plt.title('Accuracy')
+# plt.tight_layout()
+# plt.savefig(os.path.join(SAVE_PATH,SAVE_SPEC+'_accuracy_boxplot.pdf'))
+# plt.show()
 
 
 
