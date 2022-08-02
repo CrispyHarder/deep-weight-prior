@@ -121,8 +121,9 @@ def to_one_hot (labels,num_classes=10):
     return one_hot
 
 class Ensemble():
-    def __init__(self,init,device,dataloaders):
+    def __init__(self,init,device,ds,dataloaders):
         self.device = device
+        self.ds = ds
         self.init = init 
         self.dataloaders = dataloaders 
         self.poss_runs = []
@@ -143,7 +144,7 @@ class Ensemble():
     #     return logits/self.n_members
 
     def search_models(self):
-        path = os.path.join('logs',f'exman-train-net-cifar.py','runs')
+        path = os.path.join('logs',f'exman-train-net-{self.ds}.py','runs')
         for run in os.listdir(path):
             yaml_p = os.path.join(path,run,'params.yaml')
             with open(yaml_p) as f:
