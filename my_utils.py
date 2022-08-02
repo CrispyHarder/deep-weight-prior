@@ -10,6 +10,7 @@ import warnings
 from collections import Counter
 from torch.optim.lr_scheduler import _LRScheduler
 import numpy as np 
+from models.cifar import ResNet
 
 
 class MultistepMultiGammaLR(_LRScheduler):
@@ -162,8 +163,9 @@ class Ensemble():
                 self.poss_runs.append(os.path.join(path,run))
 
     def get_models(self):
+        n_classes = 10 if self.ds=='cifar' else 2
         for run_id in self.poss_runs:
-            model = resnet.resnet20()
+            model = ResNet([3,3,3],num_classes=n_classes)
             model.load_state_dict(torch.load(os.path.join(run_id,'net_params.torch'),map_location=self.device))
             model = model.to(self.device)
             model.eval()
