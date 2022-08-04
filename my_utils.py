@@ -109,10 +109,10 @@ def sorted_alphanumeric(data):
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
     return sorted(data, key=alphanum_key)
 
-def brier_multi(targets, probs):
+def brier_multi(targets, probs,num_classes=10):
     '''Takes in a 1 dim tensor of targets and a 2-dim vector of probability scores and 
     computes the Brier score'''
-    targets = to_one_hot(targets)
+    targets = to_one_hot(targets,num_classes=num_classes)
     return np.mean(np.sum((probs - targets)**2, axis=1))
 
 def to_one_hot (labels,num_classes=10):
