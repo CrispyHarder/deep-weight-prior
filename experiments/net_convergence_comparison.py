@@ -10,7 +10,7 @@ from datetime import date
 import seaborn as sns 
 import json
 
-DATASET = 'pcam'
+DATASET = 'cifar'
 
 def print_test_perf(files,init):
     acc = []
@@ -30,20 +30,26 @@ def print_test_perf(files,init):
     # print(f'{init} has acc {acc_mean} pm {acc_std} and a nll of {nll_mean} pm {nll_std}' )
     return acc,nll 
     
-
+def first_to_reach(data):
+    global DATASET
+    th = 0.80 if DATASET=='pcam' else 0.65
+    for i in range(len(data)):
+        if data[i]>=th:
+            return i
+    return 'dnf'
 
 logs_path = os.path.join('logs',f'exman-train-net-{DATASET}.py','runs')
 runs = [os.path.join(logs_path,run) for run in os.listdir(logs_path)]
 
 #[['xavier'],['vae'],['he'],['vqvae1.0'],['vqvae1.3'],['vqvae1.0','pixelcnn0'],['vqvae1.3','pixelcnn0']]
-INIT_NAMES = [['vae'],['he'],['xavier'],['vqvae1'],['vqvae1','pixelcnn'],['tvae'],['lvae'],['ghn_base'],['ghn_loss'],['ghn_ce']]
+INIT_NAMES = [['ghn_ce'],['ghn_loss']] # [['xavier'],['he'],['lvae'],['vae'],['vqvae1'],['vqvae1','pixelcnn'],['tvae'],['ghn_base'],['ghn_ce'],['ghn_loss']]
 METR_NAMES = ['ACC Val'] # 'NLL Train','ACC Train',
-SAVE_PATH = os.path.join('logs','small-results',str(date.today()),'init comparison')
-SAVE_SPEC = DATASET+'ff'
+SAVE_PATH = os.path.join('logs','small-results','init comparison',str(date.today()))
+SAVE_SPEC = DATASET
 SAVE_PLOTS = True
 SHOW_PLOTS = True
 STARTING_AT = 0
-ENDING_AT = 16 if DATASET == 'cifar' else 10
+ENDING_AT =  121 if DATASET == 'cifar' else 41 
 
 if not os.path.exists(SAVE_PATH):
     os.makedirs(SAVE_PATH)
@@ -84,22 +90,25 @@ for i,init in enumerate(INIT_NAMES):
 sns.set_theme()
 sns.set_context('paper')
 sns.set(rc={'figure.figsize':(10,8)})
-sns.set(font_scale = 1.9)
+sns.set(font_scale = 2.5)
 
 
 titles ={'NLL Train':' ','NLL Val':'NLL','ACC Val':'Accuracy','ACC Train':' '}
 legends = {'NLL Train':'upper right','NLL Val':'upper right','ACC Val':'lower right','ACC Train':'lower right'}
-labels = {'vae':'CVAE','he':'He','xavier':'Xavier','vqvae1':'VQVAE','vqvae1 + pixelcnn':'VQVAE + Pixel','tvae':'TVAE',
-            'lvae':'LVAE','ghn_base':'GHN','ghn_loss':'Noise GHN[L]','ghn_ce':'Noise GHN[C]'}
+labels = {'vae':'CVAE','he':'He','xavier':'Xavier','vqvae1':'VQVAE','vqvae1 + pixelcnn':'VQVAE*','tvae':'TVAE',
+            'lvae':'LVAE','ghn_base':'GHN','ghn_loss':'Noise GHN[L] ','ghn_ce':'Noise GHN[CE]'}
 COLUMN = 3
 for i,m_name in enumerate(METR_NAMES):
     plt.figure()
     for j,init in enumerate(INIT_NAMES):
+        #print(init,first_to_reach(data[j][:,3]))
         label = init[0] if len(init) == 1 else init[0] + ' + ' + init[1]
         label = labels[label]
-        sns.lineplot(x=np.arange(STARTING_AT,ENDING_AT,1),y=data[j][STARTING_AT:ENDING_AT,COLUMN],label=label)
-    plt.title(titles[m_name])
-    plt.legend(loc=legends[m_name])
+        lp = sns.lineplot(x=np.arange(STARTING_AT,ENDING_AT,1),y=data[j][STARTING_AT:ENDING_AT,COLUMN],label=label,lw=4)
+
+    lp.set(xlabel='Epoch')
+    lp.set(ylabel='Accuracy')
+    plt.legend(loc=legends[m_name],fontsize=20)
     plt.tight_layout()
     if SAVE_PLOTS:    
         plt.savefig(os.path.join(SAVE_PATH,SAVE_SPEC+'_'+m_name+'.pdf'))
@@ -107,17 +116,18 @@ for i,m_name in enumerate(METR_NAMES):
         plt.show()
 
 
-# labels_boxes = {'vae':'CVAE','he':'He','xavier':'Xavier','vqvae1':'VQVAE','vqvae1 + pixelcnn':"VQVAE\n+Pixel",'tvae':'TVAE',
-#             'lvae':'LVAE','ghn_base':'GHN','ghn_loss':'Noise\nGHN[L]','ghn_ce':'Noise\nGHN[C]'}
+# labels_boxes = {'xavier':'Xavier','he':'He','lvae':'LVAE','vae':'CVAE','vqvae1':'VQVAE','vqvae1 + pixelcnn':"VQVAE*",'tvae':'TVAE',
+#             'ghn_base':'GHN','ghn_ce':'Noise GHN','ghn_loss':'Noise GHNLOSS'}
+labels_boxes = {'ghn_ce':'Noise GHN[CE]','ghn_loss':'Noise GHN[L]'}
 
-# test_perf_acc = pd.DataFrame(np.transpose(test_perf_acc))
-# test_perf_acc.columns = labels_boxes.values()
+test_perf_acc = pd.DataFrame(np.transpose(test_perf_acc))
+test_perf_acc.columns = labels_boxes.values()
 
 # test_perf_nll = pd.DataFrame(np.transpose(test_perf_nll))
 # test_perf_nll.columns = labels_boxes.values()
 
-# sns.set(rc={'figure.figsize':(11,8)})
-# sns.set(font_scale = 1.6)
+# sns.set(rc={'figure.figsize':(20,8)})
+# sns.set(font_scale = 2.5)
 
 # plt.figure()
 # b1 = sns.boxplot(data=test_perf_nll)
@@ -127,13 +137,13 @@ for i,m_name in enumerate(METR_NAMES):
 # plt.savefig(os.path.join(SAVE_PATH,SAVE_SPEC+'_nll_boxplot.pdf'))
 
 
-# plt.figure()
-# b2 = sns.boxplot(data=test_perf_acc)
-# b2.set(xlabel='Initialisation')
-# plt.title('Accuracy')
-# plt.tight_layout()
-# plt.savefig(os.path.join(SAVE_PATH,SAVE_SPEC+'_accuracy_boxplot.pdf'))
-# plt.show()
+plt.figure()
+b2 = sns.boxplot(data=test_perf_acc)
+b2.set(xlabel='Initialisation')
+b2.set(ylabel='Accuracy')
+plt.tight_layout()
+plt.savefig(os.path.join(SAVE_PATH,SAVE_SPEC+'_accuracy_boxplot.pdf'))
+plt.show()
 
 
 
