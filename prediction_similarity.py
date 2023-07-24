@@ -11,6 +11,8 @@ from datetime import date
 from models.cifar.resnet import resnet20
 from models.cifar import ResNet
 
+my_pal = sns.diverging_palette(198, 354, l=63,as_cmap=True)
+
 def plot_matrix_as_heatmap(matrix,show=False,title='',save_path='',cbar=False,label=False,sim_name=''):
     '''plots the cosine similariy matrix of a number of models
     or model configurations'''
@@ -20,7 +22,7 @@ def plot_matrix_as_heatmap(matrix,show=False,title='',save_path='',cbar=False,la
     sns.set_theme()
     sns.set_context('paper')
     ticks = np.arange(VMIN+0.05,1.01,0.05)
-    ax = sns.heatmap(matrix,cmap='coolwarm',square=True,cbar=cbar,vmin=VMIN, cbar_kws={'ticks':ticks}) 
+    ax = sns.heatmap(matrix,cmap=my_pal,square=True,cbar=cbar,vmin=VMIN, cbar_kws={'ticks':ticks}) 
     ax.set(xticklabels=[])
     ax.set(yticklabels=[])
     ax.set_title(title,fontsize=FONTSZ)
@@ -96,8 +98,8 @@ else :
     VMIN = 0.7 if args.sim=='logits' else 0.8
 FONTSZ = 30
 
-INITS = [['he'],['vqvae1','pixelcnn'],['ghn_base'],['ghn_ce']]
-INIT_NAMES = {'he':'He','tvae':'TVAE','ghn_base':'GHN','ghn_ce':'Noise GHN','vqvae1':'VQVAE*'}
+INITS = [['xavier'],['he'],['vae'],['vqvae1','pixelcnn'],['ghn_base'],['ghn_ce']] # [['he'],['xavier'],['cvae'],['vqvae1','pixelcnn'],['ghn_base'],['ghn_ce']]
+INIT_NAMES = {'he':'He','tvae':'TVAE','ghn_base':'GHN','ghn_ce':'Noise GHN','vqvae1':'VQVAE*','xavier':'Xavier','vae':'VAE'}
 EXPERIMENT_NAME = 'prediction similarity'
 SAVE_PATH = os.path.join('logs','small-results',EXPERIMENT_NAME,str(date.today())) #SAVE_PATH = os.path.join('logs','small-results',EXPERIMENT_NAME,str(date.today()))
 if not os.path.exists(SAVE_PATH):
@@ -131,7 +133,6 @@ if args.comp:
                     model_paths.append(file)
             if dict['mult_init_mode'] == init:
                 model_paths.append(file)
-
 
 
         # get matrix to make the heatmap 

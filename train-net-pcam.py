@@ -100,7 +100,10 @@ logger = Logger('logs', base=args.root, fmt=fmt)
 
 # Load Datasets
 t0 = time.time()
-trainloader, valloader, testloader = utils.load_pcam_loaders(args.bs, args.test_bs)
+trainloader, valloader, testloader = utils.load_pcam_dataloaders(args.bs)
+for loader in  [trainloader, valloader, testloader]:
+    loader.pin_memory_device = []
+
 load_time = time.time()
 print(f"loading data took {load_time-t0} seconds")
 net = ResNet([3,3,3],num_classes=args.n_classes).to(device)

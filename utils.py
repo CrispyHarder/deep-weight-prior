@@ -3,7 +3,7 @@ from torch import nn
 import numpy as np
 from torch.utils.data import Dataset
 from torch.autograd import Variable
-from torchvision import transforms
+
 import PIL
 from models import pixelcnn
 from models.bayes import _Bayes, BayesConv2d
@@ -15,7 +15,7 @@ import sys
 import pickle
 import pandas as pd 
 from PIL import Image
-import torchvision.transforms as transforms 
+
 from torch.utils.data import random_split
 from sklearn.model_selection import train_test_split
 from scipy.special import logsumexp
@@ -30,7 +30,10 @@ from models.tvae.models import MLP_Decoder,MLP_Encoder
 from models.tvae.grouper import Stationary_Capsules_1d
 from models.tvae.tvae import TVAE
 from models.lvae import LVAE
-DATA_ROOT = os.path.join('data')# os.environ['DATA_ROOT']
+from torchvision.datasets import ImageFolder
+from torchvision import transforms
+
+DATA_ROOT = "/gris/gris-f/homestud/charder/deep-weight-prior/data"# os.environ['DATA_ROOT']
 
 def kl_ffn(mu0, var0, mu1, var1):
     return 0.5 * (var0/var1 + (mu1 - mu0)**2 / var1 - 1 + np.log(var1/var0))
@@ -263,7 +266,24 @@ def load_cifar_c_loader(level):
     dataset = CifarC_dataset(level)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=500, shuffle=False, num_workers=0)
     return dataloader
+
+def get_pcam_transfer_dataloaders(bs):
+    base_dir = "/gris/gris-f/homestud/charder/deep-weight-prior/data/pcam_folders"
+
+    train_dir = os.path.join(base_dir,"train")
+    valid_dir = os.path.join(base_dir,"valid")
+    test_dir = os.path.join(base_dir,"test")
+
+    train_ds = ImageFolder(train_dir,transform=transforms.ToTensor())
+    valid_ds = ImageFolder(valid_dir,transform=transforms.ToTensor())
+    test_ds = ImageFolder(test_dir,transform=transforms.ToTensor())
+
+    trainloader = torch.utils.data.DataLoader(train_ds, batch_size=bs, shuffle=True, num_workers=6)
+    valloader = torch.utils.data.DataLoader(valid_ds, batch_size=bs, shuffle=False, num_workers=6)
+    testloader = torch.utils.data.DataLoader(test_ds, batch_size=bs, shuffle=False, num_workers=6)
     
+    return trainloader,valloader,testloader
+
 class Pcam_dataset(Dataset):
     def __init__(self, data_dir, transform,data_type="train"):      
     
